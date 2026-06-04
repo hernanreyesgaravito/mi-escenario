@@ -2,96 +2,109 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Aruba 2930F VSF</title>
     <style>
         :root {
-            --bg-color: #0d1117;
-            --panel-bg: #161b22;
-            --border-color: #30363d;
-            --text-main: #c9d1d9;
-            --text-muted: #8b949e;
-            --color-blue: #58a6ff;
-            --color-green: #3fb950;
-            --color-red: #f85149;
-            --aruba-orange: #FF8300;
-            --color-yellow: #f1e05a;
-            --comment-color: #6e7681;
+            /* Paleta Corporativa */
+            --bg-color: #FFFFFF;
+            --panel-bg: #F9F9F9;
+            --border-color: #CCCCCC;
+            --text-main: #000000;
+            --text-muted: #333333;
+            
+            --corp-blue: #001EB4;
+            --corp-dark-blue: #00005A;
+            --corp-light-blue: #44C8F5;
+            --corp-grey: #9B9B9B;
+            --corp-yellow: #FFBE00;
+            --corp-magenta: #FF0064;
+            --corp-orange: #FB561E;
+            --corp-green: #00F52D;
+
+            /* Variables de interfaz mapeadas a la corporativa */
+            --color-blue: var(--corp-blue);
+            --color-green: var(--corp-green);
+            --color-red: var(--corp-magenta);
+            --aruba-orange: var(--corp-orange);
+            --color-yellow: var(--corp-yellow);
+            --comment-color: #FFFFFF;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background-color: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; height: 100vh; overflow: hidden; position: relative; }
 
         /* TABS HEADER */
-        .tabs { display: flex; background: #010409; border-bottom: 1px solid var(--border-color); padding: 0 20px; z-index: 10; }
-        .tab-btn { background: transparent; color: var(--text-muted); border: none; padding: 15px 20px; cursor: pointer; font-size: 14px; font-weight: bold; border-bottom: 3px solid transparent; transition: 0.3s;}
-        .tab-btn:hover { color: var(--text-main); }
-        .tab-btn.active { color: var(--aruba-orange); border-bottom: 3px solid var(--aruba-orange); }
+        .tabs { display: flex; background: #FFFFFF; border-bottom: 2px solid var(--border-color); padding: 0 20px; z-index: 10; }
+        .tab-btn { background: transparent; color: var(--corp-dark-blue); border: none; padding: 15px 20px; cursor: pointer; font-size: 14px; font-weight: bold; border-bottom: 3px solid transparent; transition: 0.3s;}
+        .tab-btn:hover { color: var(--corp-blue); }
+        .tab-btn.active { color: var(--corp-dark-blue); border-bottom: 3px solid var(--corp-dark-blue); }
 
         .tab-content { display: none; flex: 1; overflow-y: auto; overflow-x: hidden; }
         .tab-content.active { display: flex; flex-direction: column; }
 
         /* TAB 1: CONSIDERACIONES */
         .considerations-panel {padding:40px;max-width:900px;margin:0 auto;overflow:visible;line-height:1.6;height:auto;min-height:fit-content;}
-        .considerations-panel h2 { color: var(--aruba-orange); margin-bottom: 20px;}
-        .considerations-panel h2.secondary-title { color: var(--color-blue); margin-top: 20px;}
+        .considerations-panel h2 { color: var(--corp-blue); font-weight: bold; margin-bottom: 20px;}
+        .considerations-panel h2.secondary-title { color: var(--corp-light-blue); font-weight: bold; margin-top: 20px;}
         .considerations-panel ul { list-style: none; padding: 0; }
-        .considerations-panel li { background: var(--panel-bg); margin-bottom: 10px; padding: 15px; border-radius: 6px; border-left: 4px solid var(--color-blue); }
+        .considerations-panel li { background: var(--panel-bg); color: #000000; margin-bottom: 10px; padding: 15px; border-radius: 6px; border-left: 4px solid var(--color-blue); }
         .considerations-panel li.cmd-item { border-left: 4px solid var(--color-green); }
 
         /* TAB WORKSPACE COMPARTIDO */
         .workspace { display: flex; flex: 1; overflow: hidden; }
         .wizard-sidebar { width: 350px; background: var(--panel-bg); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; z-index: 10;}
         .wizard-header { padding: 15px; border-bottom: 1px solid var(--border-color); }
-        .wizard-header select { width: 100%; padding: 8px; background: var(--bg-color); color: white; border: 1px solid var(--border-color); border-radius: 4px; margin-top: 10px; outline: none;}
+        .wizard-header h3 { color: var(--corp-blue) !important; font-weight: bold; }
+        .wizard-header select { width: 100%; padding: 8px; background: #FFFFFF; color: #000000; border: 1px solid var(--border-color); border-radius: 4px; margin-top: 10px; outline: none;}
         .step-list { flex: 1; overflow-y: auto; padding: 15px; }
-        .step-item { padding: 12px; border: 1px solid var(--border-color); margin-bottom: 10px; border-radius: 6px; opacity: 0.5; transition: 0.3s; background: var(--bg-color);}
-        .step-item.active { opacity: 1; border-color: var(--aruba-orange); box-shadow: 0 0 10px rgba(255, 131, 0, 0.1); }
+        .step-item { padding: 12px; border: 1px solid var(--border-color); margin-bottom: 10px; border-radius: 6px; opacity: 0.5; transition: 0.3s; background: #FFFFFF;}
+        .step-item.active { opacity: 1; border-color: var(--aruba-orange); box-shadow: 0 0 10px rgba(251, 86, 30, 0.2); }
         .step-item.done { opacity: 0.8; border-color: var(--color-green); }
-        .step-item h4 { margin-bottom: 5px; color: var(--color-blue); font-size: 13px;}
-        .step-item p { font-size: 12px; color: var(--text-muted); line-height: 1.4; white-space: pre-wrap;}
+        .step-item h4 { margin-bottom: 5px; color: var(--corp-light-blue); font-weight: bold; font-size: 13px;}
+        .step-item p { font-size: 12px; color: #000000; line-height: 1.4; white-space: pre-wrap;}
         
         .wizard-footer { padding: 15px; border-top: 1px solid var(--border-color); }
-        .btn-next { width: 100%; background: #238636; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s;}
+        .btn-next { width: 100%; background: var(--corp-blue); color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s;}
         .btn-next:disabled { background: var(--border-color); color: var(--text-muted); cursor: not-allowed; }
-        .btn-next.glow { animation: btnPulse 1.5s infinite; background: var(--aruba-orange); color: black;}
+        .btn-next.glow { animation: btnPulse 1.5s infinite; background: var(--aruba-orange); color: white;}
 
-        @keyframes btnPulse { 0% { box-shadow: 0 0 0 0 rgba(255, 131, 0, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(255, 131, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 131, 0, 0); } }
+        @keyframes btnPulse { 0% { box-shadow: 0 0 0 0 rgba(251, 86, 30, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(251, 86, 30, 0); } 100% { box-shadow: 0 0 0 0 rgba(251, 86, 30, 0); } }
 
         /* MAIN CONTENT COMPARTIDO */
         .main-view { flex: 1; display: flex; flex-direction: column; z-index: 1;}
-        .svg-container { flex: 1; background-image: radial-gradient(#21262d 1px, transparent 1px); background-size: 20px 20px; display: flex; justify-content: center; align-items: center; position: relative; overflow: auto;}
+        .svg-container { flex: 1; background-image: radial-gradient(#e0e0e0 1px, transparent 1px); background-size: 20px 20px; display: flex; justify-content: center; align-items: center; position: relative; overflow: auto;}
         
-        .terminal { height: 350px; background: #010409; border-top: 1px solid var(--border-color); display: flex; flex-direction: column; z-index: 5;}
-        .terminal-header { padding: 8px 15px; background: var(--panel-bg); font-size: 12px; color: var(--text-muted); border-bottom: 1px solid var(--border-color); font-weight: bold;}
-        .cli-window { flex: 1; padding: 15px; overflow-y: auto; color: #e6edf3; padding-bottom: 30px;} 
+        .terminal { height: 350px; background: var(--corp-grey); border-top: 1px solid var(--border-color); display: flex; flex-direction: column; z-index: 5;}
+        .terminal-header { padding: 8px 15px; background: var(--corp-dark-blue); font-size: 12px; color: #FFFFFF; border-bottom: 1px solid var(--border-color); font-weight: bold;}
+        .cli-window { flex: 1; padding: 15px; overflow-y: auto; color: #000000; padding-bottom: 30px; background: var(--corp-grey);} 
         .cli-pre { font-family: "SFMono-Regular", Consolas, monospace; font-size: 12px; line-height: 1.5; white-space: pre-wrap; margin: 0; padding-bottom: 15px;}
         
-        /* NUEVOS COLORES SEPARADOS PARA LA CONSOLA */
-        .cli-prompt { color: var(--color-blue); font-weight: bold; }
-        .cli-cmd { color: var(--color-yellow); font-weight: bold; }
-        .cli-sys { color: var(--color-green); font-style: italic;}
-        .cli-comment { color: var(--comment-color); font-style: italic;}
+        /* COLORES SEPARADOS PARA LA CONSOLA (SOBRE FONDO GRIS) */
+        .cli-prompt { color: var(--corp-dark-blue); font-weight: bold; }
+        .cli-cmd { color: #000000; font-weight: bold; }
+        .cli-sys { color: var(--corp-blue); font-style: italic;}
+        .cli-comment { color: #FFFFFF; font-style: italic;}
         
         /* SVG STYLES COMPARTIDOS */
         svg { width: 100%; height: 100%; cursor: crosshair; max-height: 450px; touch-action: none;} 
-        .switch-box { fill: #161b22; stroke: #484f58; stroke-width: 2px; rx: 4px; transition: 0.5s;}
-        .switch-box.failed { stroke: var(--color-red); stroke-width: 3px; fill: #2a1114; animation: failPulse 2s infinite; }
-        @keyframes failPulse { 0% { box-shadow: 0 0 0 0 rgba(248, 81, 73, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(248, 81, 73, 0); } 100% { box-shadow: 0 0 0 0 rgba(248, 81, 73, 0); } }
+        .switch-box { fill: #FFFFFF; stroke: var(--border-color); stroke-width: 2px; rx: 4px; transition: 0.5s;}
+        .switch-box.failed { stroke: var(--color-red); stroke-width: 3px; fill: #FFF0F0; animation: failPulse 2s infinite; }
+        @keyframes failPulse { 0% { box-shadow: 0 0 0 0 rgba(255, 0, 100, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(255, 0, 100, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 0, 100, 0); } }
 
-        .port { fill: #0d1117; stroke: #30363d; stroke-width: 1px; rx: 2px; cursor: pointer;}
-        .port-glow { stroke: var(--aruba-orange); stroke-width: 2px; animation: portPulse 1s infinite; fill: rgba(255, 131, 0, 0.2);}
+        .port { fill: #FFFFFF; stroke: var(--border-color); stroke-width: 1px; rx: 2px; cursor: pointer;}
+        .port-glow { stroke: var(--aruba-orange); stroke-width: 2px; animation: portPulse 1s infinite; fill: rgba(251, 86, 30, 0.2);}
         
-        .led-off { fill: #010409; stroke: #30363d; stroke-width: 1px; }
-        .led-active { fill: var(--color-green); stroke: none; animation: blink 0.8s infinite; }
+        .led-off { fill: #E0E0E0; stroke: var(--border-color); stroke-width: 1px; }
+        .led-active { fill: var(--corp-green); stroke: none; animation: blink 0.8s infinite; }
         .led-error { fill: var(--color-red); stroke: none; animation: blink 0.5s infinite; }
         @keyframes blink { 0% { opacity: 0.3; } 50% { opacity: 1; box-shadow: 0 0 5px currentColor; } 100% { opacity: 0.3; } }
 
-        .sw-title { fill: #c9d1d9; font-weight: bold; font-family: sans-serif; font-size: 12px;}
-        .sw-status { fill: var(--text-muted); font-size: 10px; font-family: sans-serif; }
+        .sw-title { fill: var(--corp-blue); font-weight: bold; font-family: sans-serif; font-size: 12px;}
+        .sw-status { fill: #000000; font-size: 10px; font-family: sans-serif; }
         .sw-title.failed-text { fill: var(--color-red); }
         
-        .cable { fill: none; stroke: var(--color-green); stroke-width: 4px; stroke-linecap: round; transition: 0.5s;}
+        .cable { fill: none; stroke: var(--corp-green); stroke-width: 4px; stroke-linecap: round; transition: 0.5s;}
         .cable.broken { stroke: var(--color-red); stroke-dasharray: 5,5; opacity: 0.5; }
         .cable-temp { fill: none; stroke: var(--aruba-orange); stroke-width: 4px; stroke-dasharray: 5,5; pointer-events: none;}
 
@@ -101,22 +114,22 @@
             bottom: 12px;
             right: 20px;
             font-size: 11px;
-            color: var(--text-muted);
+            color: #000000;
             font-family: "SFMono-Regular", Consolas, monospace;
             opacity: 0.6;
             z-index: 100;
             pointer-events: none;
-            background: rgba(1, 4, 9, 0.8);
+            background: rgba(255, 255, 255, 0.9);
             padding: 4px 8px;
             border-radius: 4px;
-            border: 1px dashed var(--border-color);
+            border: 1px solid var(--border-color);
         }
-        .author-signature span { color: var(--aruba-orange); font-weight: bold;}
+        .author-signature span { color: var(--corp-blue); font-weight: bold;}
     
-.tab-content::-webkit-scrollbar{
-display:none;
-}
-</style>
+        .tab-content::-webkit-scrollbar{
+            display:none;
+        }
+    </style>
 </head>
 <body>
 
@@ -124,13 +137,11 @@ display:none;
         <button class="tab-btn active" onclick="openTab('tab-theory')">1. Fundamentos VSF</button>
         <button class="tab-btn" onclick="openTab('tab-t2')">2. Lab VSF Cadena (2 Switches)</button>
         <button class="tab-btn" onclick="openTab('tab-t3')">3. Lab VSF Anillo (3 Switches)</button>
-        <button class="tab-btn" onclick="openTab('tab-t4')" style="color: var(--color-blue);">4. Falla y Reemplazo</button>
+        <button class="tab-btn" onclick="openTab('tab-t4')">4. Falla y Reemplazo</button>
     </div>
 
-    <!-- FIRMA GLOBAL -->
     <div class="author-signature">Desarrollado por <span>Estiven Gallego V1</span></div>
 
-    <!-- TAB 1: CONSIDERACIONES -->
     <div id="tab-theory" class="tab-content active">
         <div class="considerations-panel">
             
@@ -138,7 +149,7 @@ display:none;
 
 <p>VSF permite combinar múltiples switches físicos Aruba para operar como un único switch lógico. Aunque físicamente existen varios equipos, ArubaOS los administra como un único chasis virtual.</p>
 
-<div style="background:var(--panel-bg);padding:20px;margin:20px 0;border-radius:8px;border-left:4px solid var(--aruba-orange);">
+<div style="background:#F9F9F9;padding:20px;margin:20px 0;border-radius:8px;border-left:4px solid var(--aruba-orange);border:1px solid #CCCCCC;">
 <svg id="vsfTheorySVG" viewBox="0 0 850 300" style="max-height:280px;"></svg>
 </div>
 
@@ -202,30 +213,29 @@ display:none;
     </li>
 </ul>
 
-<!-- SIMULADOR VSF INTERACTIVO -->
-<div class="vsf-simulator-box" style="background:#161b22; padding:20px; border-radius:8px; border:1px solid #30363d; margin:20px 0;">
+<div class="vsf-simulator-box" style="background:#FFFFFF; padding:20px; border-radius:8px; border:1px solid #CCCCCC; margin:20px 0;">
    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-       <h3 style="color:#58a6ff; margin:0;">🛠️ Simulador de Cableado (2930F)</h3>
+       <h3 style="color:var(--corp-blue); margin:0;">🛠️ Simulador de Cableado (2930F)</h3>
        <div>
-           <button onclick="simulateFailure()" style="padding:5px 15px; background:#f85149; color:#fff; border:none; border-radius:4px; cursor:pointer; font-size:12px; font-weight:bold; margin-right:5px;">💥 Dañar SW1</button>
-           <button onclick="initInteractiveSim()" style="padding:5px 15px; background:#30363d; color:#c9d1d9; border:none; border-radius:4px; cursor:pointer; font-size:12px;">🔄 Limpiar</button>
+           <button onclick="simulateFailure()" style="padding:5px 15px; background:var(--corp-magenta); color:#fff; border:none; border-radius:4px; cursor:pointer; font-size:12px; font-weight:bold; margin-right:5px;">💥 Dañar SW1</button>
+           <button onclick="initInteractiveSim()" style="padding:5px 15px; background:#E0E0E0; color:#000000; font-weight:bold; border:none; border-radius:4px; cursor:pointer; font-size:12px;">🔄 Limpiar</button>
        </div>
    </div>
-   <p id="sim-rules-text" style="font-size:14px; color:#8b949e; margin-bottom:15px;"></p>
+   <p id="sim-rules-text" style="font-size:14px; color:#000000; margin-bottom:15px;"></p>
    
    <div style="margin-bottom:15px; display:flex; align-items:center;">
-       <label style="font-weight:bold; color:#c9d1d9;">Switches:</label>
-       <select id="sim-size" onchange="initInteractiveSim()" style="padding:5px; background:#0d1117; color:#c9d1d9; border:1px solid #30363d; border-radius:4px; margin-left:10px;">
+       <label style="font-weight:bold; color:#000000;">Switches:</label>
+       <select id="sim-size" onchange="initInteractiveSim()" style="padding:5px; background:#FFFFFF; color:#000000; border:1px solid #CCCCCC; border-radius:4px; margin-left:10px;">
            <option value="2">2 (Chain)</option>
            <option value="3">3 (Ring/Chain)</option>
        </select>
    </div>
    
-   <div id="sim-canvas-container" style="width:100%; height:450px; background:#010409; border:1px dashed #30363d; border-radius:6px; position:relative; overflow:hidden; touch-action:none; margin-bottom:15px; user-select:none; -webkit-user-select:none;">
+   <div id="sim-canvas-container" style="width:100%; height:450px; background:#FFFFFF; border:1px dashed #CCCCCC; border-radius:6px; position:relative; overflow:hidden; touch-action:none; margin-bottom:15px; user-select:none; -webkit-user-select:none;">
        <svg id="sim-svg" width="100%" height="100%" style="position:absolute; top:0; left:0;"></svg>
    </div>
    
-   <button onclick="validateInteractiveSim()" style="padding:10px 20px; background:#3fb950; color:#fff; font-weight:bold; border:none; border-radius:4px; cursor:pointer; width:100%; transition: 0.2s;">⚡ Validar Cableado</button>
+   <button onclick="validateInteractiveSim()" style="padding:10px 20px; background:var(--corp-green); color:#000000; font-weight:bold; border:none; border-radius:4px; cursor:pointer; width:100%; transition: 0.2s;">⚡ Validar Cableado</button>
    
    <div id="sim-result" style="margin-top:15px; font-weight:bold; font-size:15px; min-height:40px;"></div>
 </div>
@@ -242,12 +252,11 @@ display:none;
         </div>
     </div>
 
-    <!-- TAB 2: TOPOLOGIA 2 SWITCHES -->
     <div id="tab-t2" class="tab-content">
         <div class="workspace">
             <div class="wizard-sidebar">
                 <div class="wizard-header">
-                    <h3 style="font-size: 14px; color: var(--c9d1d9);">Método de Aprovisionamiento</h3>
+                    <h3 style="font-size: 14px;">Método de Aprovisionamiento</h3>
                     <select id="t2_methodSelect">
                         <option value="semi">Semi-Automático (Discovery L2)</option>
                         <option value="strict">Estricto (Control Total)</option>
@@ -266,12 +275,11 @@ display:none;
         </div>
     </div>
 
-    <!-- TAB 3: TOPOLOGIA 3 SWITCHES (ANILLO) -->
     <div id="tab-t3" class="tab-content">
         <div class="workspace">
             <div class="wizard-sidebar">
                 <div class="wizard-header">
-                    <h3 style="font-size: 14px; color: var(--c9d1d9);">Flujo de 3 Switches (Ring)</h3>
+                    <h3 style="font-size: 14px;">Flujo de 3 Switches (Ring)</h3>
                     <select disabled><option>Método Estricto (Requerido para Anillos)</option></select>
                 </div>
                 <div class="step-list" id="t3_stepList"></div>
@@ -287,13 +295,12 @@ display:none;
         </div>
     </div>
 
-    <!-- TAB 4: REEMPLAZO POR FALLA -->
     <div id="tab-t4" class="tab-content">
         <div class="workspace">
             <div class="wizard-sidebar">
                 <div class="wizard-header">
-                    <h3 style="font-size: 14px; color: var(--color-red);">🔥 Escenario: Reemplazo RMA</h3>
-                    <p style="font-size: 11px; color: var(--text-muted); margin-top: 5px;">El Standby (SW2) ha sufrido un fallo crítico.</p>
+                    <h3 style="font-size: 14px; color: var(--color-red) !important;">🔥 Escenario: Reemplazo RMA</h3>
+                    <p style="font-size: 11px; color: #000000; margin-top: 5px;">El Standby (SW2) ha sufrido un fallo crítico.</p>
                 </div>
                 <div class="step-list" id="t4_stepList"></div>
                 <div class="wizard-footer"><button id="t4_btnNext" class="btn-next">Iniciar Diagnóstico</button></div>
@@ -316,8 +323,7 @@ display:none;
             event.target.classList.add('active');
             document.getElementById(tabId).classList.add('active');
             
-            if(tabId === 'tab-t2') drawVSFTheory();
-        initT2();
+            if(tabId === 'tab-t2') { drawVSFTheory(); initT2(); }
             if(tabId === 'tab-t3') initT3();
             if(tabId === 'tab-t4') initT4();
         }
@@ -389,10 +395,9 @@ display:none;
         }
 
         // ==========================================
-        // NUEVA FUNCIÓN PARA COLORES AUTOMÁTICOS
+        // COLORES AUTOMÁTICOS CLI
         // ==========================================
         function appendCLI(targetDiv, cliText) {
-            // Busca líneas que comiencen con SWSUC...# y separa el Prompt del Comando
             let formatted = cliText.replace(/^(SWSUC.*?#)(.*?)(?=<span|$)/gm, function(match, p1, p2) {
                 return `<span class='cli-prompt'>${p1}</span><span class='cli-cmd'>${p2}</span>`;
             });
@@ -410,7 +415,7 @@ display:none;
         const t2_flowSemi = [{ title: "1. Habilitar VSF", desc: "Habilita el dominio en el primer switch. Requiere reinicio.", cli: "SWSUC(config)# vsf enable domain 1 <span class='cli-comment'>// Activa el protocolo VSF</span>\nContinue (y/n)? y <span class='cli-comment'>// Confirmamos reinicio</span>\n<span class='cli-sys'>[El SW se reiniciará...]</span>" }, { title: "2. Configurar Enlaces", desc: "Asigna los puertos lógicos (Backplane).", cli: "SWSUC(config)# vsf member 1 link 1 1/23,1/24 <span class='cli-comment'>// Agrupa puertos físicos 23 y 24</span>" }, { title: "3. Conectar y Encender", desc: "⚠️ ¡Arrastra los cables! Conecta el <b>23 al 47</b>, y el <b>24 al 48</b>.", cli: "<span class='cli-sys'>[Esperando acción: Conecte 2 cables de 1G]...</span>", isCabling: true }, { title: "4. Validación", desc: "Verifica que el stack esté en Chain.", cli: t2_finalValidationCLI }];
         const t2_flowStrict = [{ title: "1. Habilitar VSF", desc: "Creamos el dominio en SWSUC.", cli: "SWSUC(config)# vsf enable domain 1 <span class='cli-comment'>// Activa VSF</span>\nContinue (y/n)? y\n<span class='cli-sys'>[El SW se reiniciará...]</span>" }, { title: "2. Rol del Jefe (SW1)", desc: "Configuramos enlaces y máxima prioridad.", cli: "SWSUC(config)# vsf member 1 link 1 1/23,1/24 <span class='cli-comment'>// Configura puertos</span>\nSWSUC(config)# vsf member 1 priority 255 <span class='cli-comment'>// Fija como Commander</span>" }, { title: "3. Aprovisionar SW2", desc: "Plantilla del SW2 antes de conectarlo.", cli: "SWSUC(config)# vsf member 2 type JL262A mac-address e0071b-000002 <span class='cli-comment'>// Registra modelo y MAC</span>\nSWSUC(config)# vsf member 2 link 2 2/47,2/48 <span class='cli-comment'>// Puertos SW2 </span>\nSWSUC(config)# vsf member 2 priority 254 <span class='cli-comment'>// Prioridad Standby</span>" }, { title: "4. Conectar y Encender", desc: "⚠️ ¡Arrastra los cables! Conecta el <b>23 al 47</b>, y el <b>24 al 48</b>.", cli: "<span class='cli-sys'>[Esperando acción: Conecte 2 cables de 1G]...</span>", isCabling: true }, { title: "5. Comandos Validación", desc: "Validamos salud y enlaces.", cli: t2_finalValidationCLI }];
 
-        function drawT2Topology() { t2_svg.innerHTML = `<rect x="50" y="30" width="450" height="60" class="switch-box"/><text x="65" y="52" class="sw-title" id="t2_lbl_sw1">SWSUC (Standalone)</text><text x="65" y="70" class="sw-status" id="t2_sts_sw1">Model: JL261A | Ports: 1/23, 1/24</text><circle id="t2_led23" cx="456" cy="46" r="2.5" class="led-off" /><rect id="t2_p23" x="450" y="52" width="12" height="16" class="port" /><text x="456" y="80" font-size="8" fill="#8b949e" text-anchor="middle">23</text><circle id="t2_led24" cx="476" cy="46" r="2.5" class="led-off" /><rect id="t2_p24" x="470" y="52" width="12" height="16" class="port" /><text x="476" y="80" font-size="8" fill="#8b949e" text-anchor="middle">24</text><rect x="50" y="170" width="450" height="60" class="switch-box"/><text x="65" y="192" class="sw-title" id="t2_lbl_sw2">SW2 (Factory Default)</text><text x="65" y="210" class="sw-status" id="t2_sts_sw2">Model: JL262A | Ports: 2/47, 2/48</text><circle id="t2_led47" cx="456" cy="186" r="2.5" class="led-off" /><rect id="t2_p47" x="450" y="192" width="12" height="16" class="port" /><text x="456" y="220" font-size="8" fill="#8b949e" text-anchor="middle">47</text><circle id="t2_led48" cx="476" cy="186" r="2.5" class="led-off" /><rect id="t2_p48" x="470" y="192" width="12" height="16" class="port" /><text x="476" y="220" font-size="8" fill="#8b949e" text-anchor="middle">48</text>`; }
+        function drawT2Topology() { t2_svg.innerHTML = `<rect x="50" y="30" width="450" height="60" class="switch-box"/><text x="65" y="52" class="sw-title" id="t2_lbl_sw1">SWSUC (Standalone)</text><text x="65" y="70" class="sw-status" id="t2_sts_sw1">Model: JL261A | Ports: 1/23, 1/24</text><circle id="t2_led23" cx="456" cy="46" r="2.5" class="led-off" /><rect id="t2_p23" x="450" y="52" width="12" height="16" class="port" /><text x="456" y="80" font-size="8" fill="#000000" text-anchor="middle">23</text><circle id="t2_led24" cx="476" cy="46" r="2.5" class="led-off" /><rect id="t2_p24" x="470" y="52" width="12" height="16" class="port" /><text x="476" y="80" font-size="8" fill="#000000" text-anchor="middle">24</text><rect x="50" y="170" width="450" height="60" class="switch-box"/><text x="65" y="192" class="sw-title" id="t2_lbl_sw2">SW2 (Factory Default)</text><text x="65" y="210" class="sw-status" id="t2_sts_sw2">Model: JL262A | Ports: 2/47, 2/48</text><circle id="t2_led47" cx="456" cy="186" r="2.5" class="led-off" /><rect id="t2_p47" x="450" y="192" width="12" height="16" class="port" /><text x="456" y="220" font-size="8" fill="#000000" text-anchor="middle">47</text><circle id="t2_led48" cx="476" cy="186" r="2.5" class="led-off" /><rect id="t2_p48" x="470" y="192" width="12" height="16" class="port" /><text x="476" y="220" font-size="8" fill="#000000" text-anchor="middle">48</text>`; }
 
         function initT2() {
             t2_stepIdx = 0; t2_cables = 0; t2_isCabling = false; t2_cli.innerHTML = ''; t2_btnNext.textContent = "Siguiente Paso"; t2_btnNext.disabled = false; t2_btnNext.classList.remove('glow');
@@ -442,11 +447,11 @@ display:none;
             } return false;
         });
 
-        const flowT3 = [{ title: "1. Habilitar VSF y Domain", desc: "Creamos el dominio en el SW1 y reiniciamos.", cli: "SWSUC(config)# vsf enable domain 1 <span class='cli-comment'>// Activa VSF</span>\nContinue (y/n)? y\n<span class='cli-sys'>[Reiniciando SWSUC...]</span>" }, { title: "2. Configurar Roles y Enlaces (SW1)", desc: "Configuramos Link 1 y Link 2 en SW1 para preparar el Anillo.", cli: "SWSUC(config)# vsf member 1 priority 255 <span class='cli-comment'>// Máxima prioridad al Commander</span>\nSWSUC(config)# vsf member 1 link 1 1/25 <span class='cli-comment'>// Link 1 (Hacia SW2)</span>\nSWSUC(config)# vsf member 1 link 2 1/26 <span class='cli-comment'>// Link 2 (Hacia SW3, Cierra el Anillo)</span>" }, { title: "3. Pre-Aprovisionar SW2 y SW3", desc: "Creamos la plantilla del Standby y del Member indicando enlaces cruzados.", cli: "SWSUC(config)# vsf member 2 type JL262A mac-address e0071b-000002 <span class='cli-comment'>// Plantilla SW2 (Standby)</span>\nSWSUC(config)# vsf member 2 priority 128\nSWSUC(config)# vsf member 2 link 2 2/49 <span class='cli-comment'>// Recibe de SW1</span>\nSWSUC(config)# vsf member 2 link 1 2/50 <span class='cli-comment'>// Envía a SW3</span>\n\nSWSUC(config)# vsf member 3 type JL261A mac-address f1182c-000003 <span class='cli-comment'>// Plantilla SW3 (Member)</span>\nSWSUC(config)# vsf member 3 priority 64\nSWSUC(config)# vsf member 3 link 2 3/25 <span class='cli-comment'>// Recibe de SW2</span>\nSWSUC(config)# vsf member 3 link 1 3/26 <span class='cli-comment'>// Envía a SW1 (Anillo)</span>" }, { title: "4. Cableado Interactivo en Anillo", desc: "⚠️ Conecta en orden para notar los colores:\n1. <b style='color:var(--color-blue)'>1/25</b> con <b style='color:var(--color-blue)'>2/49</b>\n2. <b style='color:var(--color-green)'>2/50</b> con <b style='color:var(--color-green)'>3/25</b>\n3. <b style='color:var(--aruba-orange)'>3/26</b> con <b style='color:var(--aruba-orange)'>1/26</b>", cli: "<span class='cli-sys'>[Esperando acción: Conecte 3 cables de 1G]...</span>", isCabling: true }, { title: "5. Validación de Topología Ring", desc: "Comprobamos que Topology sea Ring y enlaces estén Up.", cli: `SWSUC# show vsf <span class='cli-comment'>// Validación general</span>\n\n VSF Domain ID    : 1\n VSF Topology     : Ring\n VSF Status       : <span style='color:var(--color-green)'>Active</span>\n Uptime           : 2d 4h 12m\n VSF MAD          : None\n VSF Port Speed   : 3G\n Software Version : WC.16.11.0028\n\n Mbr MAC Address       Model                                 Pri Status\n --- ----------------- ------------------------------------- --- -------\n  1  b8d4e7-29a1c0     Aruba JL261A 24G-PoE+                 255 <span style='color:var(--color-green)'>Commander</span>\n  2  e0071b-000002     Aruba JL262A 48G-PoE+                 128 <span style='color:var(--color-green)'>Standby</span>\n  3  f1182c-000003     Aruba JL261A 24G-PoE+                 64  <span style='color:var(--color-green)'>Member</span>\n\nSWSUC# show vsf link <span class='cli-comment'>// Verificación física del Anillo</span>\n\n VSF Member 1\n Link  Peer Member  Peer Link  State\n ----  -----------  ---------  ------\n 1     2            2          <span style='color:var(--color-green)'>Up</span>\n 2     3            1          <span style='color:var(--color-green)'>Up</span>\n\n VSF Member 2\n Link  Peer Member  Peer Link  State\n ----  -----------  ---------  ------\n 1     3            2          <span style='color:var(--color-green)'>Up</span>\n 2     1            1          <span style='color:var(--color-green)'>Up</span>\n\n VSF Member 3\n Link  Peer Member  Peer Link  State\n ----  -----------  ---------  ------\n 1     1            2          <span style='color:var(--color-green)'>Up</span>\n 2     2            1     <span style='color:var(--color-green)'>Up</span>` }];
-        function drawT3Topology() { t3_svg.innerHTML = ''; let g1 = document.createElementNS("http://www.w3.org/2000/svg", "g"); g1.innerHTML = `<rect x="50" y="30" width="450" height="60" class="switch-box"/><text x="65" y="52" class="sw-title" id="t3_lbl_sw1">SWSUC (Standalone)</text><text x="65" y="70" class="sw-status" id="t3_sts_sw1">Aruba JL261A 24G | Links: 1/25, 1/26</text><circle id="t3_led25" cx="456" cy="46" r="2.5" class="led-off"/><rect id="t3_p25" x="450" y="52" width="12" height="16" class="port"/><text x="456" y="80" font-size="8" fill="#8b949e" text-anchor="middle">25</text><circle id="t3_led26" cx="476" cy="46" r="2.5" class="led-off"/><rect id="t3_p26" x="470" y="52" width="12" height="16" class="port"/><text x="476" y="80" font-size="8" fill="#8b949e" text-anchor="middle">26</text>`; let g2 = document.createElementNS("http://www.w3.org/2000/svg", "g"); g2.innerHTML = `<rect x="50" y="140" width="450" height="60" class="switch-box"/><text x="65" y="162" class="sw-title" id="t3_lbl_sw2">SW2 (Factory Default)</text><text x="65" y="180" class="sw-status" id="t3_sts_sw2">Aruba JL262A 48G | Links: 2/49, 2/50</text><circle id="t3_led49" cx="456" cy="156" r="2.5" class="led-off"/><rect id="t3_p49" x="450" y="162" width="12" height="16" class="port"/><text x="456" y="190" font-size="8" fill="#8b949e" text-anchor="middle">49</text><circle id="t3_led50" cx="476" cy="156" r="2.5" class="led-off"/><rect id="t3_p50" x="470" y="162" width="12" height="16" class="port"/><text x="476" y="190" font-size="8" fill="#8b949e" text-anchor="middle">50</text>`; let g3 = document.createElementNS("http://www.w3.org/2000/svg", "g"); g3.innerHTML = `<rect x="50" y="250" width="450" height="60" class="switch-box"/><text x="65" y="272" class="sw-title" id="t3_lbl_sw3">SW3 (Factory Default)</text><text x="65" y="290" class="sw-status" id="t3_sts_sw3">Aruba JL261A 24G | Links: 3/25, 3/26</text><circle id="t3_led325" cx="456" cy="266" r="2.5" class="led-off"/><rect id="t3_p325" x="450" y="272" width="12" height="16" class="port"/><text x="456" y="300" font-size="8" fill="#8b949e" text-anchor="middle">25</text><circle id="t3_led326" cx="476" cy="266" r="2.5" class="led-off"/><rect id="t3_p326" x="470" y="272" width="12" height="16" class="port"/><text x="476" y="300" font-size="8" fill="#8b949e" text-anchor="middle">26</text>`; t3_svg.appendChild(g1); t3_svg.appendChild(g2); t3_svg.appendChild(g3); }
+        const flowT3 = [{ title: "1. Habilitar VSF y Domain", desc: "Creamos el dominio en el SW1 y reiniciamos.", cli: "SWSUC(config)# vsf enable domain 1 <span class='cli-comment'>// Activa VSF</span>\nContinue (y/n)? y\n<span class='cli-sys'>[Reiniciando SWSUC...]</span>" }, { title: "2. Configurar Roles y Enlaces (SW1)", desc: "Configuramos Link 1 y Link 2 en SW1 para preparar el Anillo.", cli: "SWSUC(config)# vsf member 1 priority 255 <span class='cli-comment'>// Máxima prioridad al Commander</span>\nSWSUC(config)# vsf member 1 link 1 1/25 <span class='cli-comment'>// Link 1 (Hacia SW2)</span>\nSWSUC(config)# vsf member 1 link 2 1/26 <span class='cli-comment'>// Link 2 (Hacia SW3, Cierra el Anillo)</span>" }, { title: "3. Pre-Aprovisionar SW2 y SW3", desc: "Creamos la plantilla del Standby y del Member indicando enlaces cruzados.", cli: "SWSUC(config)# vsf member 2 type JL262A mac-address e0071b-000002 <span class='cli-comment'>// Plantilla SW2 (Standby)</span>\nSWSUC(config)# vsf member 2 priority 128\nSWSUC(config)# vsf member 2 link 2 2/49 <span class='cli-comment'>// Recibe de SW1</span>\nSWSUC(config)# vsf member 2 link 1 2/50 <span class='cli-comment'>// Envía a SW3</span>\n\nSWSUC(config)# vsf member 3 type JL261A mac-address f1182c-000003 <span class='cli-comment'>// Plantilla SW3 (Member)</span>\nSWSUC(config)# vsf member 3 priority 64\nSWSUC(config)# vsf member 3 link 2 3/25 <span class='cli-comment'>// Recibe de SW2</span>\nSWSUC(config)# vsf member 3 link 1 3/26 <span class='cli-comment'>// Envía a SW1 (Anillo)</span>" }, { title: "4. Cableado Interactivo en Anillo", desc: "⚠️ Conecta en orden para notar los colores:\n1. <b style='color:var(--corp-blue)'>1/25</b> con <b style='color:var(--corp-blue)'>2/49</b>\n2. <b style='color:var(--color-green)'>2/50</b> con <b style='color:var(--color-green)'>3/25</b>\n3. <b style='color:var(--aruba-orange)'>3/26</b> con <b style='color:var(--aruba-orange)'>1/26</b>", cli: "<span class='cli-sys'>[Esperando acción: Conecte 3 cables de 1G]...</span>", isCabling: true }, { title: "5. Validación de Topología Ring", desc: "Comprobamos que Topology sea Ring y enlaces estén Up.", cli: `SWSUC# show vsf <span class='cli-comment'>// Validación general</span>\n\n VSF Domain ID    : 1\n VSF Topology     : Ring\n VSF Status       : <span style='color:var(--color-green)'>Active</span>\n Uptime           : 2d 4h 12m\n VSF MAD          : None\n VSF Port Speed   : 3G\n Software Version : WC.16.11.0028\n\n Mbr MAC Address       Model                                 Pri Status\n --- ----------------- ------------------------------------- --- -------\n  1  b8d4e7-29a1c0     Aruba JL261A 24G-PoE+                 255 <span style='color:var(--color-green)'>Commander</span>\n  2  e0071b-000002     Aruba JL262A 48G-PoE+                 128 <span style='color:var(--color-green)'>Standby</span>\n  3  f1182c-000003     Aruba JL261A 24G-PoE+                 64  <span style='color:var(--color-green)'>Member</span>\n\nSWSUC# show vsf link <span class='cli-comment'>// Verificación física del Anillo</span>\n\n VSF Member 1\n Link  Peer Member  Peer Link  State\n ----  -----------  ---------  ------\n 1     2            2          <span style='color:var(--color-green)'>Up</span>\n 2     3            1          <span style='color:var(--color-green)'>Up</span>\n\n VSF Member 2\n Link  Peer Member  Peer Link  State\n ----  -----------  ---------  ------\n 1     3            2          <span style='color:var(--color-green)'>Up</span>\n 2     1            1          <span style='color:var(--color-green)'>Up</span>\n\n VSF Member 3\n Link  Peer Member  Peer Link  State\n ----  -----------  ---------  ------\n 1     1            2          <span style='color:var(--color-green)'>Up</span>\n 2     2            1     <span style='color:var(--color-green)'>Up</span>` }];
+        function drawT3Topology() { t3_svg.innerHTML = ''; let g1 = document.createElementNS("http://www.w3.org/2000/svg", "g"); g1.innerHTML = `<rect x="50" y="30" width="450" height="60" class="switch-box"/><text x="65" y="52" class="sw-title" id="t3_lbl_sw1">SWSUC (Standalone)</text><text x="65" y="70" class="sw-status" id="t3_sts_sw1">Aruba JL261A 24G | Links: 1/25, 1/26</text><circle id="t3_led25" cx="456" cy="46" r="2.5" class="led-off"/><rect id="t3_p25" x="450" y="52" width="12" height="16" class="port"/><text x="456" y="80" font-size="8" fill="#000000" text-anchor="middle">25</text><circle id="t3_led26" cx="476" cy="46" r="2.5" class="led-off"/><rect id="t3_p26" x="470" y="52" width="12" height="16" class="port"/><text x="476" y="80" font-size="8" fill="#000000" text-anchor="middle">26</text>`; let g2 = document.createElementNS("http://www.w3.org/2000/svg", "g"); g2.innerHTML = `<rect x="50" y="140" width="450" height="60" class="switch-box"/><text x="65" y="162" class="sw-title" id="t3_lbl_sw2">SW2 (Factory Default)</text><text x="65" y="180" class="sw-status" id="t3_sts_sw2">Aruba JL262A 48G | Links: 2/49, 2/50</text><circle id="t3_led49" cx="456" cy="156" r="2.5" class="led-off"/><rect id="t3_p49" x="450" y="162" width="12" height="16" class="port"/><text x="456" y="190" font-size="8" fill="#000000" text-anchor="middle">49</text><circle id="t3_led50" cx="476" cy="156" r="2.5" class="led-off"/><rect id="t3_p50" x="470" y="162" width="12" height="16" class="port"/><text x="476" y="190" font-size="8" fill="#000000" text-anchor="middle">50</text>`; let g3 = document.createElementNS("http://www.w3.org/2000/svg", "g"); g3.innerHTML = `<rect x="50" y="250" width="450" height="60" class="switch-box"/><text x="65" y="272" class="sw-title" id="t3_lbl_sw3">SW3 (Factory Default)</text><text x="65" y="290" class="sw-status" id="t3_sts_sw3">Aruba JL261A 24G | Links: 3/25, 3/26</text><circle id="t3_led325" cx="456" cy="266" r="2.5" class="led-off"/><rect id="t3_p325" x="450" y="272" width="12" height="16" class="port"/><text x="456" y="300" font-size="8" fill="#000000" text-anchor="middle">25</text><circle id="t3_led326" cx="476" cy="266" r="2.5" class="led-off"/><rect id="t3_p326" x="470" y="272" width="12" height="16" class="port"/><text x="476" y="300" font-size="8" fill="#000000" text-anchor="middle">26</text>`; t3_svg.appendChild(g1); t3_svg.appendChild(g2); t3_svg.appendChild(g3); }
         function initT3() { t3_stepIdx = 0; t3_cables = 0; t3_isCabling = false; t3_cli.innerHTML = ''; t3_btnNext.textContent = "Siguiente Paso"; t3_btnNext.disabled = false; t3_btnNext.classList.remove('glow'); t3_stepList.innerHTML = ''; flowT3.forEach((s, i) => { let div = document.createElement('div'); div.className = `step-item ${i===0?'active':''}`; div.id = `t3_step_${i}`; div.innerHTML = `<h4>${s.title}</h4><p>${s.desc}</p>`; t3_stepList.appendChild(div); }); drawT3Topology(); }
         t3_btnNext.addEventListener('click', () => { if(t3_stepIdx >= flowT3.length) return; appendCLI(t3_cli, flowT3[t3_stepIdx].cli); if(t3_stepIdx === 0) { document.getElementById('t3_lbl_sw1').textContent = "SWSUC (Domain 1 - Commander)"; document.getElementById('t3_lbl_sw1').style.fill = "var(--color-green)"; } if(flowT3[t3_stepIdx].isCabling) { t3_isCabling = true; t3_btnNext.disabled = true; t3_btnNext.textContent = "¡Cierra el Anillo (3 Cables)!"; t3_btnNext.classList.add('glow'); ['t3_p25', 't3_p26', 't3_p49', 't3_p50', 't3_p325', 't3_p326'].forEach(id => document.getElementById(id).classList.add('port-glow')); } document.getElementById(`t3_step_${t3_stepIdx}`).classList.replace('active', 'done'); t3_stepIdx++; if(t3_stepIdx < flowT3.length && !t3_isCabling) { document.getElementById(`t3_step_${t3_stepIdx}`).classList.add('active'); document.getElementById(`t3_step_${t3_stepIdx}`).scrollIntoView({behavior: "smooth", block: "center"}); } else if (!t3_isCabling) { t3_btnNext.textContent = "Stack Operativo"; t3_btnNext.disabled = true; } });
-        setupDragAndDrop(t3_svg, (startId, endId) => { let cableColor = false; if ((startId.includes('p25') && !startId.includes('325') && endId.includes('p49')) || (startId.includes('p49') && endId.includes('p25') && !endId.includes('325'))) { cableColor = 'var(--color-blue)'; } else if ((startId.includes('p50') && endId.includes('p325')) || (startId.includes('p325') && endId.includes('p50'))) { cableColor = 'var(--color-green)'; } else if ((startId.includes('p26') && !startId.includes('326') && endId.includes('p326')) || (startId.includes('p326') && endId.includes('p26') && !endId.includes('326'))) { cableColor = 'var(--aruba-orange)'; } if (cableColor) { t3_cables++; if (t3_cables === 3) { t3_isCabling = false; t3_btnNext.disabled = false; t3_btnNext.classList.remove('glow'); t3_btnNext.textContent = "Siguiente Paso"; document.getElementById('t3_lbl_sw2').textContent = "SWSUC (Member 2 - Standby)"; document.getElementById('t3_lbl_sw2').style.fill = "var(--color-green)"; document.getElementById('t3_lbl_sw3').textContent = "SWSUC (Member 3)"; document.getElementById('t3_lbl_sw3').style.fill = "var(--color-green)"; appendCLI(t3_cli, "<span class='cli-sys'>\n[Anillo Cerrado Físicamente. Topología Ring detectada.]\n[SW2 y SW3 se unieron exitosamente al Domain 1.]\n</span>"); document.getElementById(`t3_step_${t3_stepIdx}`).classList.add('active'); } return cableColor; } return false; });
+        setupDragAndDrop(t3_svg, (startId, endId) => { let cableColor = false; if ((startId.includes('p25') && !startId.includes('325') && endId.includes('p49')) || (startId.includes('p49') && endId.includes('p25') && !endId.includes('325'))) { cableColor = 'var(--corp-blue)'; } else if ((startId.includes('p50') && endId.includes('p325')) || (startId.includes('p325') && endId.includes('p50'))) { cableColor = 'var(--color-green)'; } else if ((startId.includes('p26') && !startId.includes('326') && endId.includes('p326')) || (startId.includes('p326') && endId.includes('p26') && !endId.includes('326'))) { cableColor = 'var(--aruba-orange)'; } if (cableColor) { t3_cables++; if (t3_cables === 3) { t3_isCabling = false; t3_btnNext.disabled = false; t3_btnNext.classList.remove('glow'); t3_btnNext.textContent = "Siguiente Paso"; document.getElementById('t3_lbl_sw2').textContent = "SWSUC (Member 2 - Standby)"; document.getElementById('t3_lbl_sw2').style.fill = "var(--color-green)"; document.getElementById('t3_lbl_sw3').textContent = "SWSUC (Member 3)"; document.getElementById('t3_lbl_sw3').style.fill = "var(--color-green)"; appendCLI(t3_cli, "<span class='cli-sys'>\n[Anillo Cerrado Físicamente. Topología Ring detectada.]\n[SW2 y SW3 se unieron exitosamente al Domain 1.]\n</span>"); document.getElementById(`t3_step_${t3_stepIdx}`).classList.add('active'); } return cableColor; } return false; });
 
 
         // ==========================================
@@ -493,34 +498,31 @@ display:none;
 
         function drawT4Topology() {
             t4_svg.innerHTML = `
-                <!-- CABLES (Rotos inicialmente) -->
                 <line id="t4_cab1" x1="456" y1="60" x2="456" y2="192" class="cable broken" />
                 <line id="t4_cab2" x1="476" y1="60" x2="476" y2="192" class="cable broken" />
 
-                <!-- SW1 (Sano) -->
                 <rect x="50" y="30" width="450" height="60" class="switch-box"/>
                 <text x="65" y="52" class="sw-title" id="t4_lbl_sw1">SWSUC (Domain 1 - Commander)</text>
                 <text x="65" y="70" class="sw-status" id="t4_sts_sw1">Model: JL261A | Ports: 1/23, 1/24</text>
                 <circle id="t4_led23" cx="456" cy="46" r="2.5" class="led-active" />
                 <rect id="t4_p23" x="450" y="52" width="12" height="16" class="port" />
-                <text x="456" y="80" font-size="8" fill="#8b949e" text-anchor="middle">23</text>
+                <text x="456" y="80" font-size="8" fill="#000000" text-anchor="middle">23</text>
                 
                 <circle id="t4_led24" cx="476" cy="46" r="2.5" class="led-active" />
                 <rect id="t4_p24" x="470" y="52" width="12" height="16" class="port" />
-                <text x="476" y="80" font-size="8" fill="#8b949e" text-anchor="middle">24</text>
+                <text x="476" y="80" font-size="8" fill="#000000" text-anchor="middle">24</text>
 
-                <!-- SW2 (Roto) -->
                 <rect id="t4_sw2_box" x="50" y="170" width="450" height="60" class="switch-box failed"/>
                 <text x="65" y="192" class="sw-title failed-text" id="t4_lbl_sw2">SW2 (FAILED / DEAD)</text>
                 <text x="65" y="210" class="sw-status" id="t4_sts_sw2" style="fill:var(--color-red);">MAC: e0071b-000002 | No Power</text>
                 
                 <circle id="t4_led47" cx="456" cy="186" r="2.5" class="led-off" />
                 <rect id="t4_p47" x="450" y="192" width="12" height="16" class="port" />
-                <text x="456" y="220" font-size="8" fill="#8b949e" text-anchor="middle">47</text>
+                <text x="456" y="220" font-size="8" fill="#000000" text-anchor="middle">47</text>
                 
                 <circle id="t4_led48" cx="476" cy="186" r="2.5" class="led-off" />
                 <rect id="t4_p48" x="470" y="192" width="12" height="16" class="port" />
-                <text x="476" y="220" font-size="8" fill="#8b949e" text-anchor="middle">48</text>
+                <text x="476" y="220" font-size="8" fill="#000000" text-anchor="middle">48</text>
             `;
         }
 
@@ -591,91 +593,88 @@ display:none;
             } return false;
         });
 
-        
+        function drawVSFTheory() {
+            const svg = document.getElementById('vsfTheorySVG');
+            if (!svg) return;
+            
+            svg.innerHTML = `
+                <defs>
+                    <linearGradient id="linkGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#FB561E" />
+                        <stop offset="50%" stop-color="#001EB4" />
+                        <stop offset="100%" stop-color="#FB561E" />
+                    </linearGradient>
+                    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                        <feGaussianBlur stdDeviation="3" result="blur" />
+                        <feMerge>
+                            <feMergeNode in="blur" />
+                            <feMergeNode in="SourceGraphic" />
+                        </feMerge>
+                    </filter>
+                </defs>
+
+                <rect x="15" y="15" width="820" height="250" rx="15" fill="#FFFFFF" stroke="#CCCCCC" stroke-width="2" stroke-dasharray="10,5">
+                    <animate attributeName="stroke-dashoffset" from="100" to="0" dur="4s" repeatCount="indefinite" />
+                </rect>
+                <text x="35" y="45" fill="#00F52D" font-size="16" font-family="monospace" font-weight="bold">● VIRTUAL CHASSIS (VSF DOMAIN 1)</text>
+
+                <rect x="50" y="80" width="190" height="70" rx="8" fill="#F9F9F9" stroke="#001EB4" stroke-width="2" filter="url(#glow)"/>
+                <text x="95" y="110" fill="#001EB4" font-weight="bold" font-size="14">SW1 (24G)</text>
+                <text x="85" y="130" fill="#001EB4" font-size="12" font-weight="bold">🧠 Commander</text>
+                <circle cx="215" cy="115" r="5" fill="#00F52D">
+                    <animate attributeName="opacity" values="1;0.3;1" dur="1s" repeatCount="indefinite" />
+                </circle>
+
+                <rect x="330" y="80" width="190" height="70" rx="8" fill="#F9F9F9" stroke="#FB561E" stroke-width="2" filter="url(#glow)"/>
+                <text x="375" y="110" fill="#001EB4" font-weight="bold" font-size="14">SW2 (48G)</text>
+                <text x="375" y="130" fill="#FB561E" font-size="12" font-weight="bold">🛡️ Standby</text>
+                <circle cx="495" cy="115" r="5" fill="#00F52D">
+                    <animate attributeName="opacity" values="1;0.3;1" dur="1.2s" repeatCount="indefinite" />
+                </circle>
+
+                <rect x="610" y="80" width="190" height="70" rx="8" fill="#F9F9F9" stroke="#9B9B9B" stroke-width="2" />
+                <text x="655" y="110" fill="#001EB4" font-weight="bold" font-size="14">SW3 (24G)</text>
+                <text x="660" y="130" fill="#000000" font-size="12" font-weight="bold">⚙️ Member</text>
+                <circle cx="775" cy="115" r="5" fill="#00F52D">
+                    <animate attributeName="opacity" values="1;0.3;1" dur="1.5s" repeatCount="indefinite" />
+                </circle>
+
+                <path d="M 240 115 L 330 115" fill="none" stroke="url(#linkGrad)" stroke-width="4" stroke-dasharray="6,4">
+                    <animate attributeName="stroke-dashoffset" from="20" to="0" dur="1s" repeatCount="indefinite" />
+                </path>
+                <text x="260" y="105" fill="#000000" font-size="10">VSF Link</text>
+
+                <path d="M 520 115 L 610 115" fill="none" stroke="url(#linkGrad)" stroke-width="4" stroke-dasharray="6,4">
+                    <animate attributeName="stroke-dashoffset" from="20" to="0" dur="1s" repeatCount="indefinite" />
+                </path>
+                <text x="540" y="105" fill="#000000" font-size="10">VSF Link</text>
+
+                <path d="M 145 150 L 145 200 L 705 200 L 705 150" fill="none" stroke="url(#linkGrad)" stroke-width="4" stroke-dasharray="6,4">
+                    <animate attributeName="stroke-dashoffset" from="20" to="0" dur="1.5s" repeatCount="indefinite" />
+                </path>
+                <text x="390" y="215" fill="#000000" font-size="10">VSF Link (Ring Topology)</text>
+
+                <circle r="4" fill="#001EB4" filter="url(#glow)">
+                    <animateMotion dur="1.5s" repeatCount="indefinite" path="M 240 115 L 330 115" />
+                </circle>
+                <circle r="4" fill="#FB561E" filter="url(#glow)">
+                    <animateMotion dur="1.5s" repeatCount="indefinite" path="M 330 115 L 240 115" />
+                </circle>
+                <circle r="4" fill="#00F52D" filter="url(#glow)">
+                    <animateMotion dur="1.8s" repeatCount="indefinite" path="M 520 115 L 610 115" />
+                </circle>
+                <circle r="4" fill="#000000" filter="url(#glow)">
+                    <animateMotion dur="3s" repeatCount="indefinite" path="M 705 150 L 705 200 L 145 200 L 145 150" />
+                </circle>
+
+                <text x="80" y="245" fill="#000000" font-size="11">🔹 1 Sola IP de Gestión</text>
+                <text x="350" y="245" fill="#000000" font-size="11">🔹 Base de Datos Sincronizada</text>
+                <text x="630" y="245" fill="#000000" font-size="11">🔹 Único Plano de Control</text>
+            `;
+        }
 
 
-function drawVSFTheory() {
-    const svg = document.getElementById('vsfTheorySVG');
-    if (!svg) return;
-    
-    svg.innerHTML = `
-        <defs>
-            <linearGradient id="linkGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stop-color="#ff8300" />
-                <stop offset="50%" stop-color="#58a6ff" />
-                <stop offset="100%" stop-color="#ff8300" />
-            </linearGradient>
-            <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur stdDeviation="3" result="blur" />
-                <feMerge>
-                    <feMergeNode in="blur" />
-                    <feMergeNode in="SourceGraphic" />
-                </feMerge>
-            </filter>
-        </defs>
-
-        <rect x="15" y="15" width="820" height="250" rx="15" fill="#010409" stroke="#30363d" stroke-width="2" stroke-dasharray="10,5">
-            <animate attributeName="stroke-dashoffset" from="100" to="0" dur="4s" repeatCount="indefinite" />
-        </rect>
-        <text x="35" y="45" fill="#3fb950" font-size="16" font-family="monospace" font-weight="bold">● VIRTUAL CHASSIS (VSF DOMAIN 1)</text>
-
-        <rect x="50" y="80" width="190" height="70" rx="8" fill="#161b22" stroke="#58a6ff" stroke-width="2" filter="url(#glow)"/>
-        <text x="95" y="110" fill="#c9d1d9" font-weight="bold" font-size="14">SW1 (24G)</text>
-        <text x="85" y="130" fill="#58a6ff" font-size="12" font-weight="bold">🧠 Commander</text>
-        <circle cx="215" cy="115" r="5" fill="#3fb950">
-            <animate attributeName="opacity" values="1;0.3;1" dur="1s" repeatCount="indefinite" />
-        </circle>
-
-        <rect x="330" y="80" width="190" height="70" rx="8" fill="#161b22" stroke="#ff8300" stroke-width="2" filter="url(#glow)"/>
-        <text x="375" y="110" fill="#c9d1d9" font-weight="bold" font-size="14">SW2 (48G)</text>
-        <text x="375" y="130" fill="#ff8300" font-size="12" font-weight="bold">🛡️ Standby</text>
-        <circle cx="495" cy="115" r="5" fill="#3fb950">
-            <animate attributeName="opacity" values="1;0.3;1" dur="1.2s" repeatCount="indefinite" />
-        </circle>
-
-        <rect x="610" y="80" width="190" height="70" rx="8" fill="#161b22" stroke="#8b949e" stroke-width="2" />
-        <text x="655" y="110" fill="#c9d1d9" font-weight="bold" font-size="14">SW3 (24G)</text>
-        <text x="660" y="130" fill="#8b949e" font-size="12" font-weight="bold">⚙️ Member</text>
-        <circle cx="775" cy="115" r="5" fill="#3fb950">
-            <animate attributeName="opacity" values="1;0.3;1" dur="1.5s" repeatCount="indefinite" />
-        </circle>
-
-        <path d="M 240 115 L 330 115" fill="none" stroke="url(#linkGrad)" stroke-width="4" stroke-dasharray="6,4">
-            <animate attributeName="stroke-dashoffset" from="20" to="0" dur="1s" repeatCount="indefinite" />
-        </path>
-        <text x="260" y="105" fill="#8b949e" font-size="10">VSF Link</text>
-
-        <path d="M 520 115 L 610 115" fill="none" stroke="url(#linkGrad)" stroke-width="4" stroke-dasharray="6,4">
-            <animate attributeName="stroke-dashoffset" from="20" to="0" dur="1s" repeatCount="indefinite" />
-        </path>
-        <text x="540" y="105" fill="#8b949e" font-size="10">VSF Link</text>
-
-        <path d="M 145 150 L 145 200 L 705 200 L 705 150" fill="none" stroke="url(#linkGrad)" stroke-width="4" stroke-dasharray="6,4">
-            <animate attributeName="stroke-dashoffset" from="20" to="0" dur="1.5s" repeatCount="indefinite" />
-        </path>
-        <text x="390" y="215" fill="#8b949e" font-size="10">VSF Link (Ring Topology)</text>
-
-        <circle r="4" fill="#58a6ff" filter="url(#glow)">
-            <animateMotion dur="1.5s" repeatCount="indefinite" path="M 240 115 L 330 115" />
-        </circle>
-        <circle r="4" fill="#ff8300" filter="url(#glow)">
-            <animateMotion dur="1.5s" repeatCount="indefinite" path="M 330 115 L 240 115" />
-        </circle>
-        <circle r="4" fill="#3fb950" filter="url(#glow)">
-            <animateMotion dur="1.8s" repeatCount="indefinite" path="M 520 115 L 610 115" />
-        </circle>
-        <circle r="4" fill="#c9d1d9" filter="url(#glow)">
-            <animateMotion dur="3s" repeatCount="indefinite" path="M 705 150 L 705 200 L 145 200 L 145 150" />
-        </circle>
-
-        <text x="80" y="245" fill="#c9d1d9" font-size="11">🔹 1 Sola IP de Gestión</text>
-        <text x="350" y="245" fill="#c9d1d9" font-size="11">🔹 Base de Datos Sincronizada</text>
-        <text x="630" y="245" fill="#c9d1d9" font-size="11">🔹 Único Plano de Control</text>
-    `;
-}
-
-
-// Inicializar
+        // Inicializar
         initT2();
         
         document.addEventListener("DOMContentLoaded", () => { 
@@ -683,7 +682,6 @@ function drawVSFTheory() {
         });
     </script>
 
-<!-- Scripts del simulador inyectados -->
 <script>
 let simConnections = [];
 let isDraggingSim = false;
@@ -715,8 +713,8 @@ function initInteractiveSim() {
     const spacing = switchWidth + 60;
     const startX = (width - (switchWidth * size) - ((size - 1) * 60)) / 2;
 
-    const link1Color = "#58a6ff"; 
-    const link2Color = "#bc8cff"; 
+    const link1Color = "var(--corp-blue)"; 
+    const link2Color = "var(--corp-light-blue)"; 
 
     for (let i = 1; i <= size; i++) {
         let x = startX > 0 ? startX + (i - 1) * spacing : 20 + (i - 1) * 240;
@@ -728,8 +726,8 @@ function initInteractiveSim() {
         rect.setAttribute("width", switchWidth);
         rect.setAttribute("height", 90);
         rect.setAttribute("rx", 8);
-        rect.setAttribute("fill", "#161b22");
-        rect.setAttribute("stroke", "#30363d");
+        rect.setAttribute("fill", "#F9F9F9");
+        rect.setAttribute("stroke", "#CCCCCC");
         rect.setAttribute("stroke-width", 2);
         rect.classList.add("sim-switch-box");
         rect.dataset.sw = i;
@@ -738,21 +736,21 @@ function initInteractiveSim() {
         const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
         text.setAttribute("x", x + switchWidth/2);
         text.setAttribute("y", y + 25);
-        text.setAttribute("fill", "#c9d1d9");
+        text.setAttribute("fill", "#001EB4");
         text.setAttribute("font-size", 14);
         text.setAttribute("font-weight", "bold");
         text.setAttribute("text-anchor", "middle");
         text.style.pointerEvents = "none";
         text.style.userSelect = "none";
         text.textContent = "SW" + i + (i === 1 ? " (Prioridad 255)" : (i === 2 ? " (Prioridad 200)" : " (Prioridad 128)"));
-        if(i === 1) text.style.fill = "#3fb950"; 
-        if(i === 2) text.style.fill = "#ff8300"; 
+        if(i === 1) text.style.fill = "#00F52D"; 
+        if(i === 2) text.style.fill = "#FB561E"; 
         svg.appendChild(text);
 
         const l1Label = document.createElementNS("http://www.w3.org/2000/svg", "text");
         l1Label.setAttribute("x", x + 50);
         l1Label.setAttribute("y", y + 45);
-        l1Label.setAttribute("fill", link1Color);
+        l1Label.setAttribute("fill", "#001EB4");
         l1Label.setAttribute("font-size", 11);
         l1Label.setAttribute("font-weight", "bold");
         l1Label.setAttribute("text-anchor", "middle");
@@ -763,7 +761,7 @@ function initInteractiveSim() {
         const l2Label = document.createElementNS("http://www.w3.org/2000/svg", "text");
         l2Label.setAttribute("x", x + 130);
         l2Label.setAttribute("y", y + 45);
-        l2Label.setAttribute("fill", link2Color);
+        l2Label.setAttribute("fill", "#44C8F5");
         l2Label.setAttribute("font-size", 11);
         l2Label.setAttribute("font-weight", "bold");
         l2Label.setAttribute("text-anchor", "middle");
@@ -792,7 +790,7 @@ function createPort(svg, cx, cy, sw, link, portIdx, color) {
     circle.setAttribute("cx", cx);
     circle.setAttribute("cy", cy);
     circle.setAttribute("r", 8);
-    circle.setAttribute("fill", "#010409");
+    circle.setAttribute("fill", "#FFFFFF");
     circle.setAttribute("stroke", color);
     circle.setAttribute("stroke-width", 2);
     circle.style.cursor = "crosshair";
@@ -802,7 +800,7 @@ function createPort(svg, cx, cy, sw, link, portIdx, color) {
     circle.dataset.baseColor = color;
     circle.dataset.connected = "false";
     circle.onmouseenter = () => { if(circle.dataset.connected === "false" && !isFailed) circle.setAttribute("fill", color); };
-    circle.onmouseleave = () => { if(circle.dataset.connected === "false" && !isFailed) circle.setAttribute("fill", "#010409"); };
+    circle.onmouseleave = () => { if(circle.dataset.connected === "false" && !isFailed) circle.setAttribute("fill", "#FFFFFF"); };
 
     circle.onpointerdown = (e) => {
         e.stopPropagation();
@@ -853,8 +851,8 @@ function handleSimUp(e) {
         const startCircle = document.querySelector(`circle[data-id='${startPortData.id}']`);
         startCircle.dataset.connected = "true";
         target.dataset.connected = "true";
-        startCircle.setAttribute("fill", "#3fb950"); startCircle.setAttribute("stroke", "#3fb950");
-        target.setAttribute("fill", "#3fb950"); target.setAttribute("stroke", "#3fb950");
+        startCircle.setAttribute("fill", "#00F52D"); startCircle.setAttribute("stroke", "#00F52D");
+        target.setAttribute("fill", "#00F52D"); target.setAttribute("stroke", "#00F52D");
 
         simConnections.push({
             p1: startPortData.id, sw1: startPortData.sw, link1: startPortData.link,
@@ -875,7 +873,7 @@ function validateInteractiveSim() {
     let isValid = true, errorMsg = '', warningMsg = '';
 
     if (simConnections.length === 0) {
-        res.innerHTML = `<div style="color:#f85149; font-size:14px; padding:10px; background:rgba(248, 81, 73, 0.1); border-radius:4px; border:1px solid #f85149;">❌ No has conectado ningún cable.</div>`;
+        res.innerHTML = `<div style="color:var(--corp-magenta); font-size:14px; padding:10px; background:rgba(255, 0, 100, 0.1); border-radius:4px; border:1px solid var(--corp-magenta);">❌ No has conectado ningún cable.</div>`;
         return;
     }
 
@@ -915,15 +913,15 @@ function validateInteractiveSim() {
         warningMsg += `⚠️ <b>Stack Abierto:</b> Tienes ${size} switches pero no cerraste el anillo inferior. Operará como "Chain".<br>`;
     }
     if (isValid) {
-        res.innerHTML = `<div style="color:#3fb950; font-size:14px; padding:10px; background:rgba(63, 185, 80, 0.1); border-radius:4px; border:1px solid #3fb950; line-height:1.5;">✅ <b>¡Topología Perfecta!</b> Puertos físicos asignados correctamente.${warningMsg}</div>`;
+        res.innerHTML = `<div style="color:var(--corp-green); font-size:14px; padding:10px; background:rgba(0, 245, 45, 0.1); border-radius:4px; border:1px solid var(--corp-green); line-height:1.5;">✅ <b>¡Topología Perfecta!</b> Puertos físicos asignados correctamente.<br>${warningMsg}</div>`;
     } else {
-        res.innerHTML = `<div style="color:#f85149; font-size:14px; padding:10px; background:rgba(248, 81, 73, 0.1); border-radius:4px; border:1px solid #f85149; line-height:1.5;">${errorMsg}</div>`;
+        res.innerHTML = `<div style="color:var(--corp-magenta); font-size:14px; padding:10px; background:rgba(255, 0, 100, 0.1); border-radius:4px; border:1px solid var(--corp-magenta); line-height:1.5;">${errorMsg}</div>`;
     }
 }
 
 function simulateFailure() {
     if (simConnections.length === 0) {
-        document.getElementById('sim-result').innerHTML = `<div style="color:#f85149; font-size:14px; padding:10px; background:rgba(248, 81, 73, 0.1); border-radius:4px; border:1px solid #f85149;">❌ Conecta primero los cables y valídalos antes de simular una caída.</div>`;
+        document.getElementById('sim-result').innerHTML = `<div style="color:var(--corp-magenta); font-size:14px; padding:10px; background:rgba(255, 0, 100, 0.1); border-radius:4px; border:1px solid var(--corp-magenta);">❌ Conecta primero los cables y valídalos antes de simular una caída.</div>`;
         return;
     }
     if (isFailed) return; 
@@ -932,21 +930,21 @@ function simulateFailure() {
     const switches = document.querySelectorAll('.sim-switch-box');
     switches.forEach(sw => {
         if(sw.dataset.sw === "1") {
-            sw.setAttribute("fill", "#2b1114"); 
-            sw.setAttribute("stroke", "#f85149"); 
+            sw.setAttribute("fill", "#FFF0F0"); 
+            sw.setAttribute("stroke", "var(--corp-magenta)"); 
         }
     });
     
     simConnections.forEach(c => {
         if (c.sw1 === 1 || c.sw2 === 1) {
-            c.line.setAttribute("stroke", "#484f58");
+            c.line.setAttribute("stroke", "#CCCCCC");
             c.line.setAttribute("stroke-dasharray", "5,5");
         }
     });
 
     const size = parseInt(document.getElementById('sim-size').value);
     const res = document.getElementById('sim-result');
-    let msg = `<div style="color:#f85149; font-size:14px; padding:10px; background:rgba(248, 81, 73, 0.1); border-radius:4px; border:1px solid #f85149; line-height:1.5;">`;
+    let msg = `<div style="color:var(--corp-magenta); font-size:14px; padding:10px; background:rgba(255, 0, 100, 0.1); border-radius:4px; border:1px solid var(--corp-magenta); line-height:1.5;">`;
     msg += `💥 <b>¡El SW1 (Commander) ha sufrido un corte de energía!</b><br>`;
     msg += `🔌 <b>Aislamiento Físico:</b> Al apagarse el SW1, todos sus puertos físicos mueren. Tanto el SW2 como el SW3 pierden comunicación directa con él.<br>`;
     msg += `👉 <b>Failover Inmediato:</b> El <b>SW2 (Standby)</b> asume inmediatamente el rol de Commander. La IP de gestión sigue respondiendo porque ahora vive en el SW2.<br>`;
