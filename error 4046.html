@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Animación Grande</title>
+    <link href="https://fonts.googleapis.com/css2?family=Arvo&display=swap" rel="stylesheet">
+    
+    <style>
+        /* CONFIGURACIÓN GENERAL SIN DESPLAZAMIENTO */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden; /* Evita que aparezca la barra de desplazamiento */
+            background: #fff;
+        }
+
+        .page_404 {
+            font-family: 'Arvo', serif;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            position: relative;
+        }
+
+        /* Contenedor principal que aprovecha mejor el espacio */
+        .container {
+            width: 100%;
+            max-width: 800px;
+            padding: 0 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* NÚMERO 404 INTEGRADO */
+        .numero_404 {
+            font-size: 75px;
+            color: #000;
+            font-weight: bold;
+            line-height: 1;
+            margin-bottom: -10px; /* Atrae el GIF hacia arriba para ganar espacio */
+        }
+
+        /* ANIMACIÓN MÁS GRANDE (Aumentada de 240px a 320px) */
+        .four_zero_four_bg {
+            background-image: url('https://cdn.dribbble.com/users/285475/screenshots/2083086/dribbble_1.gif');
+            height: 320px; 
+            width: 100%;
+            background-position: center bottom;
+            background-repeat: no-repeat;
+            background-size: contain;
+            margin-bottom: 5px;
+        }
+
+        /* TEXTOS CON MÁRGENES MÁS AJUSTADOS */
+        .content_box_404 {
+            width: 100%;
+        }
+
+        .content_box_404 h3 {
+            font-size: 23px;
+            margin-bottom: 5px;
+            color: #000;
+            line-height: 1.2;
+        }
+
+        .content_box_404 p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 12px;
+            line-height: 1.3;
+        }
+
+        /* BOTÓN VERDE OPTIMIZADO */
+        .link_404 {
+            color: #fff !important;
+            padding: 10px 24px;
+            background: #39ac31;
+            display: inline-block;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(57, 172, 49, 0.2);
+        }
+
+        .link_404:hover {
+            background: #2e8b27;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(57, 172, 49, 0.3);
+        }
+
+        /* SELLO INTERACTIVO DE HERNAN REYES */
+        .autor-credito {
+            position: absolute;
+            bottom: 15px;
+            right: 20px;
+            font-size: 13px;
+            color: #888;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: 1px solid #eee;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            user-select: none;
+        }
+
+        .autor-credito strong {
+            color: #555;
+            transition: color 0.3s ease;
+        }
+
+        .texto-oculto {
+            max-width: 0;
+            display: inline-block;
+            overflow: hidden;
+            white-space: nowrap;
+            transition: max-width 0.5s ease, opacity 0.3s ease;
+            opacity: 0;
+            font-style: italic;
+            vertical-align: bottom;
+        }
+
+        .autor-credito:hover {
+            background: #39ac31;
+            color: #fff;
+            border-color: #39ac31;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(57, 172, 49, 0.2);
+        }
+
+        .autor-credito:hover strong {
+            color: #fff;
+        }
+
+        .autor-credito:hover .texto-oculto {
+            max-width: 150px;
+            opacity: 1;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <section class="page_404">
+        <div class="container">
+            
+            <h1 class="numero_404">404</h1>
+
+            <div class="four_zero_four_bg"></div>
+            
+            <div class="content_box_404">
+                <h3>A veces, perderse es solo el inicio de un camino mejor</h3>
+                <p>Que una conexión rota no detenga tus ganas de seguir intentándolo. ¡Tú tienes el control!</p>
+                
+                <a href="#" class="link_404">Volver a Intentarlo</a>
+            </div>
+
+        </div>
+
+        <div class="autor-credito">
+            <span class="texto-oculto">Diseñado por 💻</span>
+            <strong>Hernan Reyes</strong>
+        </div>
+    </section>
+
+</body>
+</html>
