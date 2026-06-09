@@ -1,0 +1,1804 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diseño Wi-Fi</title>
+    <style>
+        :root {
+            /* Paleta Corporativa */
+            --bg: #FFFFFF;
+            --card: #F9F9F9;
+            --border: #CCCCCC;
+            
+            --corp-blue: #001EB4;
+            --corp-dark-blue: #00005A;
+            --corp-light-blue: #44C8F5;
+            --corp-grey: #9B9B9B;
+            --corp-yellow: #FFBE00;
+            --corp-magenta: #FF0064;
+            --corp-orange: #FB561E;
+            --corp-green: #00F52D;
+
+            /* Variables de interfaz mapeadas a la corporativa */
+            --aruba-orange: var(--corp-orange);
+            --aruba-blue: var(--corp-blue);
+            --danger: var(--corp-magenta);
+            --success: var(--corp-green);
+            --warning: var(--corp-yellow);
+            --text-main: #000000;
+            --text-muted: #333333;
+            --mac-color: #555555;
+            --win-color: var(--corp-blue);
+            --dfs-zone: rgba(255, 190, 0, 0.15);
+        }
+
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; line-height: 1.6; padding-bottom: 120px; }
+        
+        .header { text-align: center; margin-bottom: 20px; width: 100%; max-width: 1100px; }
+        .header h1 { margin: 0 0 10px 0; color: var(--corp-blue); font-weight: bold; font-size: 32px; display: flex; align-items: center; justify-content: center; gap: 15px;}
+        .header p { color: var(--text-main); font-size: 18px; margin: 0;}
+
+        /* NAVEGACIÓN */
+        .tabs { display: flex; gap: 10px; margin-bottom: 30px; background: var(--card); padding: 10px; border-radius: 12px; border: 1px solid var(--border); width: 100%; max-width: 1100px; justify-content: center; flex-wrap: wrap;}
+        .tab-btn { background: transparent; color: var(--corp-dark-blue); border: 2px solid transparent; padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 15px;}
+        .tab-btn:hover { color: var(--corp-blue); background: rgba(0, 30, 180, 0.05); }
+        .tab-btn.active { color: var(--corp-dark-blue); background: rgba(0, 0, 90, 0.1); border-color: var(--corp-dark-blue); }
+
+        .tab-content { display: none; width: 100%; max-width: 1100px; animation: fadeIn 0.4s; flex-direction: column; gap: 30px; }
+        .tab-content.active { display: flex; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* CARDS Y CONTENIDO */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .card h2 { color: var(--corp-blue); font-weight: bold; margin-top: 0; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); padding-bottom: 15px;}
+        .card h3 { color: var(--corp-light-blue); font-weight: bold; margin-top: 25px; margin-bottom: 10px; }
+        
+        .analogy-box { background: #FFFFFF; padding: 25px; border-radius: 12px; border: 1px solid var(--border); border-left: 5px solid var(--aruba-orange); margin-bottom: 20px; display: flex; flex-direction: column;}
+        .analogy-box h4 { margin: 0 0 15px 0; color: var(--corp-light-blue); font-weight: bold; font-size: 20px; }
+        .analogy-box p { margin-top: 0; margin-bottom: 15px; color: #000000; }
+        .analogy-box ul { color: #000000; }
+        
+        /* MINI SIMULADORES */
+        .mini-sim { background: var(--corp-grey); padding: 15px; border-radius: 8px; border: 1px solid var(--border); margin-top: auto; color: #000000; }
+        .mini-sim label { font-size: 13px; color: #000000; font-weight: bold; display: flex; justify-content: space-between; margin-bottom: 5px;}
+        .mini-sim input[type=range] { margin: 5px 0 15px 0; width: 100%; }
+        .mini-sim-result { text-align: center; font-size: 18px; font-weight: bold; background: #FFFFFF; padding: 10px; border-radius: 6px; border: 1px solid var(--border); }
+
+        /* PISTAS INTERACTIVAS (TRACKS) */
+        .track-container { position: relative; height: 75px; background: #FFFFFF; border-radius: 8px; margin-bottom: 15px; border: 1px dashed var(--border); overflow: hidden;}
+        .track-icon { position: absolute; font-size: 26px; top: 12px; transition: left 0.2s ease-out;}
+        .ap-icon-fixed { left: 15px; color: var(--aruba-blue); text-align: center; line-height: 1.1; }
+        .snr-bar-bg { position: absolute; bottom: 0; width: 40px; border-radius: 4px 4px 0 0; }
+
+        /* SLIDERS GLOBALES */
+        input[type=range] { -webkit-appearance: none; background: transparent; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 8px; background: rgba(0,0,0,0.2); border-radius: 4px; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: var(--corp-blue); margin-top: -6px; cursor: pointer; box-shadow: 0 0 5px rgba(0,0,0,0.3); }
+
+        /* SIMULADOR DE TRASLAPE TRIANGULAR */
+        .sim-container { display: flex; flex-direction: column; align-items: center; background: var(--corp-grey); padding: 40px; border-radius: 12px; border: 1px solid var(--border); position: relative; overflow: hidden; height: 580px;}
+        .slider-container { width: 100%; max-width: 600px; margin-top: auto; z-index: 10; background: #FFFFFF; padding: 20px; border-radius: 12px; border: 1px solid var(--border); text-align: center;}
+        
+        .ap-circle { position: absolute; width: 140px; height: 140px; border-radius: 50%; border: 2px dashed rgba(0, 30, 180, 0.8); background: radial-gradient(circle, rgba(0,30,180,0.2) 0%, rgba(0,30,180,0.05) 70%, transparent 100%); display: flex; align-items: center; justify-content: center; transition: all 0.2s ease-out; color: #000000; }
+        
+        .overlap-status { position: absolute; top: 20px; padding: 10px 20px; border-radius: 8px; font-weight: bold; font-size: 16px; transition: 0.3s; z-index: 5; background: #FFFFFF;}
+        
+        /* MODELOS AP */
+        .ap-model { background: #FFFFFF; border: 1px solid var(--border); padding: 20px; border-radius: 12px; text-align: center; display: flex; flex-direction: column; height: 100%; position: relative;}
+        .ap-model.monitor { border-color: var(--warning); background: rgba(255, 190, 0, 0.05); }
+        .ap-icon-big { font-size: 40px; margin-bottom: 15px; display: flex; justify-content: center; }
+        .ap-model h4 { margin: 0 0 10px 0; color: var(--corp-light-blue); font-weight: bold; font-size: 20px; }
+        .ap-badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-bottom: 15px; background: rgba(0,30,180,0.1); color: var(--corp-blue); }
+        .monitor .ap-badge { background: rgba(255, 190, 0, 0.2); color: var(--warning); }
+        .ap-model p { font-size: 14px; flex-grow: 1; text-align: left; color: #000000; margin-bottom: 15px;}
+        
+        /* CAJAS DE CAPACIDAD AP */
+        .capacity-box { background: rgba(0,0,0,0.05); border: 1px solid var(--border); padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 12px; text-align: left;}
+        .capacity-box .title { color: var(--corp-blue); font-weight: bold; margin-bottom: 6px; display: flex; align-items: center; gap: 5px; font-size: 13px; border-bottom: 1px dashed var(--border); padding-bottom: 4px;}
+        .capacity-row { display: flex; justify-content: space-between; margin-bottom: 4px; color: #000000; }
+
+        /* DISEÑO MIMO INTERACTIVO */
+        .mimo-panel { background: #E0E0E0; border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-top: auto; text-align: left;}
+        .mimo-header { font-size: 11px; font-weight: bold; color: var(--corp-blue); text-transform: uppercase; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;}
+        .mimo-highway { display: flex; flex-direction: column; gap: 5px; background: #FFFFFF; padding: 8px; border-radius: 6px; overflow: hidden; position: relative; border: 1px solid var(--border);}
+        .mimo-lane { height: 6px; background: #CCCCCC; border-radius: 3px; position: relative; overflow: hidden;}
+        .mimo-pulse { position: absolute; top: 0; left: -30px; width: 30px; height: 100%; background: linear-gradient(90deg, transparent, var(--aruba-blue), transparent); animation: streamingData 1.5s infinite linear; }
+        .ap-535-pulse { background: linear-gradient(90deg, transparent, var(--success), transparent); animation-duration: 1s; }
+        .ap-635-pulse-6g { background: linear-gradient(90deg, transparent, var(--corp-magenta), transparent); }
+        .ap-635-pulse-5g { background: linear-gradient(90deg, transparent, var(--corp-blue), transparent); }
+        .ap-635-pulse-2g { background: linear-gradient(90deg, transparent, var(--corp-yellow), transparent); }
+        
+        @keyframes streamingData { 0% { left: -30px; } 100% { left: 110%; } }
+        
+        .mimo-toggle-btn { background: #FFFFFF; border: 1px solid var(--border); color: #000000; font-size: 11px; font-weight: bold; padding: 3px 8px; border-radius: 4px; cursor: pointer; transition: 0.2s;}
+        .mimo-toggle-btn:hover { background: var(--corp-blue); color: #FFFFFF; }
+
+        /* RADAR AM ANIMATION */
+        .radar-box { position: relative; width: 100%; height: 200px; background: var(--corp-grey); border-radius: 8px; border: 1px solid var(--border); overflow: hidden; margin-top: 15px;}
+        .radar-box-grid { position: absolute; width: 100%; height: 100%; background-image: linear-gradient(rgba(255,255,255,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.3) 1px, transparent 1px); background-size: 20px 20px; }
+        .am-ap-node { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; transform: translate(-50%, -50%); }
+        .am-ap-node svg { width: 20px; height: 20px; color: var(--corp-dark-blue); }
+        .am-center-node { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 2;}
+        .am-center-node svg { width: 28px; height: 28px; color: var(--warning); }
+        .radar-sweep { position: absolute; top: 50%; left: 50%; width: 200px; height: 200px; background: conic-gradient(from 0deg, transparent 70%, rgba(255, 190, 0, 0.6) 100%); border-radius: 50%; transform-origin: 0 0; animation: radarSpin 3s linear infinite; border: 1px solid rgba(255, 190, 0, 0.8); }
+        @keyframes radarSpin { 100% { transform: rotate(360deg); } }
+
+        /* WAVES ANIMATION PARA ATENUACIÓN */
+        .wave-anim { overflow: hidden; position: relative; display: flex; align-items: center; }
+        .wave-path { stroke-dasharray: 20; animation: dash 1s linear infinite; }
+        @keyframes dash { to { stroke-dashoffset: -40; } }
+
+        /* ARUBA AP ICON SVG */
+        .ap-svg { width: 45px; height: 45px; color: var(--corp-blue); }
+
+        /* ESTILOS COMPARTIDOS DE LOS DASHBOARDS */
+        .dashboard { background: var(--card); padding: 40px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid var(--border); }
+        .dashboard h2 { margin-top: 0; color: var(--corp-blue); font-weight: bold; }
+        .metricas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 25px; }
+        .tarjeta { background: #FFFFFF; padding: 20px; border-radius: 12px; text-align: center; border: 1px solid var(--border); }
+        .tarjeta h3 { margin: 0 0 12px 0; font-size: 13px; color: var(--corp-light-blue); text-transform: uppercase; font-weight: bold;}
+        .tarjeta .valor { font-size: 26px; font-weight: bold; color: #000000; }
+        .tarjeta .valor span { font-size: 14px; font-weight: normal; color: #333333; }
+        
+        /* Controles (Fondo Gris como la consola) */
+        .controles { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; background: var(--corp-grey); padding: 25px; border-radius: 12px; border: 1px solid var(--border); color: #000000; }
+        .control-grupo { display: flex; flex-direction: column; }
+        .control-grupo label { font-size: 14px; font-weight: bold; margin-bottom: 12px; color: #000000;}
+        .alerta { margin-top: 25px; padding: 18px; border-radius: 10px; text-align: center; font-size: 15px; font-weight: bold; transition: all 0.3s; background: #FFFFFF; border: 1px solid var(--border); }
+
+        /* ÍCONOS SVG Y AVATARES */
+        .svg-icon { width: 100%; height: 100%; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+        .icono-ap { position: absolute; top: 15px; width: 50px; height: 50px; background: #FFFFFF; color: var(--corp-blue); border: 2px solid var(--corp-blue); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; transform: translateX(-50%); z-index: 2; box-shadow: 0 0 15px rgba(0, 0, 0, 0.2); }
+        .icono-ap span { font-size: 10px; font-weight: bold; margin-top: 2px; color: #000000; }
+        .icono-disp { position: absolute; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transform: translateX(-50%); transition: left 0.1s linear; z-index: 3; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border: 2px solid #FFFFFF; }
+
+        /* ESPECÍFICOS: ROAMING BÁSICO */
+        .roam-mapa { position: relative; height: 200px; background: var(--corp-grey); border-radius: 12px; margin-bottom: 30px; border: 1px solid var(--border); }
+        #roam-slider1::-webkit-slider-thumb { background: var(--corp-blue); }
+        #roam-slider2::-webkit-slider-thumb { background: var(--corp-blue); }
+
+        /* ESPECÍFICOS: MARCAS & UMBRALES */
+        .marcas-mapa { position: relative; height: 280px; background: var(--corp-grey); border-radius: 12px; margin-bottom: 30px; border: 1px solid var(--border); }
+        .linea-conn { stroke-width: 2.5; stroke-dasharray: 5,5; transition: stroke 0.3s; }
+        .tarjeta-marca { display: flex; align-items: center; justify-content: space-between; padding: 10px 15px; background: #FFFFFF; border-radius: 8px; margin-top: 10px; border: 1px solid var(--border); color: #000000; }
+        .marca-tag { display: flex; align-items: center; gap: 10px; font-weight: bold; font-size: 14px; }
+        .marca-rssi { font-family: monospace; font-size: 16px; font-weight: bold; }
+        .marca-ap { padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; }
+
+        /* ESPECÍFICOS: 2.4GHZ */
+        .espectro-2g { position: relative; height: 250px; background: var(--corp-grey); border-radius: 12px; margin-bottom: 30px; border: 1px solid var(--border); overflow: hidden; }
+        #slider-ap1-2g::-webkit-slider-thumb { background: var(--corp-blue); }
+        #slider-ap2-2g::-webkit-slider-thumb { background: var(--corp-magenta); }
+
+        /* ESPECÍFICOS: 5GHZ */
+        .espectro-5g { position: relative; background: var(--corp-grey); border-radius: 8px; margin-bottom: 30px; border: 1px solid var(--border); padding: 20px 10px 50px 10px; }
+        .grid-espectro { display: grid; grid-template-columns: repeat(25, 1fr); gap: 4px; height: 120px; position: relative; }
+        .slot-canal { background: #FFFFFF; border: 1px solid var(--border); border-radius: 4px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 10px; font-size: 10px; font-weight: bold; color: #000000; }
+        .slot-dfs { background: var(--dfs-zone); border: 1px dashed var(--warning); }
+        .senal-5g { position: absolute; top: 20px; height: 60px; border-radius: 6px; transition: all 0.4s; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; color: white; z-index: 5; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
+        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
+        .btn-bw { flex: 1; padding: 8px; border: 1px solid var(--border); background: #FFFFFF; color: #000000; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 12px; }
+        .btn-bw.active { background: var(--corp-blue); border-color: var(--corp-blue); color: white; }
+        #btn-radar { grid-column: span 2; background: var(--corp-magenta); border: none; font-weight: bold; padding: 15px; font-size: 14px; margin-top: 10px; color: white; cursor: pointer; border-radius: 8px;}
+
+        /* TABLA CONSIDERACIONES */
+        .considerations-panel { padding: 40px; max-width: 900px; margin: 0 auto; overflow-y: auto; line-height: 1.6; background: var(--card); border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.1);}
+        .considerations-panel h2 { color: var(--corp-blue); font-weight: bold; margin-bottom: 20px; margin-top: 40px;}
+        .considerations-panel h2:first-child { margin-top: 0; }
+        .considerations-panel h3 { color: var(--corp-light-blue); font-weight: bold; margin-top: 30px; margin-bottom: 15px;}
+        .considerations-panel ul { list-style: none; padding: 0; }
+        .considerations-panel li { background: #FFFFFF; margin-bottom: 10px; padding: 15px; border-radius: 6px; border-left: 4px solid var(--corp-blue); border-right: 1px solid var(--border); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); font-size: 15px; color: #000000;}
+        .considerations-panel p { color: #000000; }
+
+        /* FIRMA FLOTANTE - FORMATO VERTICAL */
+        .signature-floating {
+            position: fixed; 
+            bottom: 20px; 
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid var(--border);
+            border-radius: 12px; 
+            padding: 12px 14px; 
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column; 
+            align-items: flex-end; 
+            gap: 12px; 
+            z-index: 10000; 
+            backdrop-filter: blur(4px); 
+            -webkit-backdrop-filter: blur(4px);
+            transition: all 0.3s ease;
+            width: max-content; 
+        }
+        .signature-floating:hover { box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15); transform: translateY(-2px); background: #FFFFFF; }
+        .signature-info { display: flex; flex-direction: column; align-items: flex-end; text-align: right; font-size: 11px; color: #555555; line-height: 1.4; }
+        .signature-info .dev { font-weight: 500; }
+        .signature-info .dev span { color: var(--corp-blue); font-weight: bold; display: block; font-size: 12.5px; }
+        .signature-info .meta { font-size: 10.5px; color: #FB561E; font-weight: bold; margin-top: 6px; border-top: 1px solid #EEEEEE; padding-top: 6px; width: 100%; text-align: right; }
+        .signature-logo { width: 140px; height: auto; max-height: 65px; object-fit: contain; }
+
+        /* --- NUEVOS ESTILOS PARA MITIGACIÓN CCI EN 2.4GHZ --- */
+        .cci-wrapper {
+            margin-top: 40px;
+            border-top: 1px dashed var(--border);
+            padding-top: 30px;
+        }
+        .cci-stage {
+            position: relative;
+            width: 100%;
+            height: 380px;
+            background: var(--corp-grey);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .cci-ap-node {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: #FFFFFF;
+            border: 2px solid var(--corp-blue);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            z-index: 20;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            /* LA LÍNEA MÁGICA PARA CENTRAR EXACTAMENTE */
+            transform: translate(-50%, -50%); 
+        }
+        .cci-ap-node span {
+            position: absolute;
+            bottom: -18px;
+            white-space: nowrap;
+            color: #000000;
+            font-weight: bold;
+            font-size: 11px;
+        }
+        .cci-coverage {
+            position: absolute;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.4s ease-out;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .cci-overlay-alert {
+            position: absolute;
+            top: 15px;
+            background: rgba(255, 0, 100, 0.9);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 13px;
+            z-index: 30;
+            animation: pulseAlert 1.5s infinite;
+            display: none;
+        }
+        @keyframes pulseAlert {
+            0% { opacity: 0.8; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.02); }
+            100% { opacity: 0.8; transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--corp-orange)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v-8m0 0a4 4 0 100-8 4 4 0 000 8zm-6.5-3.5a9 9 0 0113 0m-10-3a5 5 0 017 0"/></svg> Ingeniería Wi-Fi </h1>
+        <p>Aprende las bases físicas y las reglas de diseño antes de crear tu primer mapa de calor o enfrentarte al troubleshooting de una red inalámbrica.</p>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('tab-analogias')">🗣️ Analogías RF (Fundamentos)</button>
+        <button class="tab-btn" onclick="switchTab('tab-distancias')">📏 Distancias y Traslape</button>
+        <button class="tab-btn" onclick="switchTab('tab-modelos')">🖧 Portafolio y Modos AP</button>
+        <button class="tab-btn" onclick="switchTab('tab-reglas')">📐 Buenas Practicas Mapa De Calor</button>
+        <button class="tab-btn" onclick="abrirPestana(event, 'tab-consideraciones')">📚 Consideraciones</button>
+        <button class="tab-btn " onclick="abrirPestana(event, 'tab-roaming')">🚶‍♂️ Roaming</button>
+        <button class="tab-btn" onclick="abrirPestana(event, 'tab-marcas')">📱 Roaming por Fabricante</button>
+        <button class="tab-btn" onclick="abrirPestana(event, 'tab-2ghz')">📶 Espectro 2.4GHz</button>
+        <button class="tab-btn" onclick="abrirPestana(event, 'tab-5ghz')">✈️ 5GHz & DFS</button>
+    </div>
+
+    <div id="tab-analogias" class="tab-content active">
+        <div class="card">
+            <h2>El Salón de Conferencias (Entendiendo la Radiofrecuencia)</h2>
+            <p>Para diseñar un buen mapa de calor en Aruba Central, primero debes entender cómo se comporta la señal en el aire. Imagina que un Access Point (AP) es un <b>Orador en una sala de conferencias</b> y el dispositivo cliente (tu celular) es un <b>Oyente</b>.</p>
+
+            <div class="grid-2" style="margin-top: 30px;">
+                
+                <div class="analogy-box" style="border-left-color: var(--corp-blue);">
+                    <h4 style="color: var(--corp-light-blue);">📢 EIRP (El Grito Final)</h4>
+                    <p><b>Concepto Técnico:</b> Effective Isotropic Radiated Power. Es la potencia total de la señal que sale al aire.</p>
+                    <p><b>La Analogía:</b> Imagina que el orador tiene una fuerza de voz natural (Potencia del Radio/Tx) y además usa un megáfono para dirigirla (Ganancia de AP). La suma de ambas es el volumen final del grito (EIRP).</p>
+                    <ul style="font-size: 14px; margin-top: 0; padding-left: 20px; margin-bottom: 20px; color: #000000;">
+                        <li><b>Tx Power (Radio):</b> Se ajusta en el perfil del AP (Ej. 15 dBm).</li>
+                        <li><b>Ganancia (AP):</b> Es fija según el modelo físico del AP (Ej. 5 dBi).</li>
+                    </ul>
+                    
+                    <div class="mini-sim">
+                        <label>Voz del Radio (Tx Power) <span id="lbl-eirp-tx">15 dBm</span></label>
+                        <input type="range" id="sim-eirp-tx" min="5" max="24" value="15" oninput="updEIRP()">
+                        
+                        <label>Megáfono (Ganancia de AP) <span id="lbl-eirp-gain">5 dBi</span></label>
+                        <input type="range" id="sim-eirp-gain" min="0" max="10" value="5" oninput="updEIRP()">
+                        
+                        <div id="out-eirp" class="mini-sim-result" style="color: var(--corp-blue); border-color: var(--corp-blue);">EIRP: 20 dBm</div>
+                    </div>
+                </div>
+
+                <div class="analogy-box">
+                    <h4 style="color: var(--corp-light-blue);">🔊 RSSI (El Volumen Recibido)</h4>
+                    <p><b>Concepto Técnico:</b> Received Signal Strength Indicator. Mide la potencia absoluta de la señal que el dispositivo finalmente recibe.</p>
+                    <p><b>La Analogía:</b> Si te alejas hacia la puerta trasera, la voz decae de forma logarítmica rápida hasta perderse.</p>
+                    <ul style="font-size: 14px; margin-top: 0; padding-left: 20px; margin-bottom: 20px;">
+                        <li><span style="color:var(--success); font-weight:bold;">🟢 Excelente:</span> -30 a -60 dBm</li>
+                        <li><span style="color:var(--warning); font-weight:bold;">🟡 Bueno / Aceptable:</span> -61 a -70 dBm</li>
+                        <li><span style="color:var(--corp-orange); font-weight:bold;">🟠 Malo / Límite:</span> -71 a -80 dBm</li>
+                        <li><span style="color:var(--danger); font-weight:bold;">🔴 Crítico:</span> -81 dBm o menos</li>
+                    </ul>
+                    
+                    <div class="mini-sim">
+                        <div class="track-container">
+                            <div class="track-icon ap-icon-fixed">
+                                <svg class="ap-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="2" y="2" width="20" height="20" rx="4" ry="4" fill="rgba(0,30,180,0.1)"/>
+                                    <circle cx="12" cy="12" r="2" fill="currentColor"/>
+                                    <circle cx="6" cy="6" r="0.7" fill="currentColor"/><circle cx="18" cy="6" r="0.7" fill="currentColor"/>
+                                    <circle cx="6" cy="18" r="0.7" fill="currentColor"/><circle cx="18" cy="18" r="0.7" fill="currentColor"/>
+                                </svg>
+                            </div>
+                            <div id="rssi-user-icon" class="track-icon" style="left: 40px; top: 15px; display:flex; flex-direction:column; align-items:center;">
+                                <svg id="wifi-bars" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: -5px; transition: all 0.2s;">
+                                    <path class="rssi-bar-3" d="M5 12.55a11 11 0 0 1 14.08 0" stroke="var(--success)"/>
+                                    <path class="rssi-bar-2" d="M8.53 16.11a6 6 0 0 1 6.95 0" stroke="var(--success)"/>
+                                    <circle class="rssi-bar-1" cx="12" cy="20" r="1.5" fill="var(--success)" stroke="none"/>
+                                </svg>
+                                📱
+                            </div>
+                        </div>
+                        <label>Alejar al usuario del AP (Metros) <span id="lbl-rssi-dist">5 m</span></label>
+                        <input type="range" id="sim-rssi" min="1" max="40" value="5" oninput="updRSSI()">
+                        <div id="out-rssi" class="mini-sim-result"></div>
+                    </div>
+                </div>
+
+                <div class="analogy-box" style="border-left-color: var(--warning);">
+                    <h4 style="color: var(--corp-light-blue);">🗣️ Ruido y SNR (La Claridad)</h4>
+                    <p><b>Concepto Técnico:</b> Signal-to-Noise Ratio. Es la diferencia matemática entre la señal útil recibida y el ruido de fondo.</p>
+                    <p><b>La Analogía:</b> Aunque el orador grite, si hay una construcción ruidosa al lado no le entiendes. Necesitas que la voz destaque claramente sobre el ruido de fondo ambiente.</p>
+                    <ul style="font-size: 14px; margin-top: 0; padding-left: 20px; margin-bottom: 20px;">
+                        <li><span style="color:var(--success); font-weight:bold;">🟢 Excelente:</span> 25 dB o más</li>
+                        <li><span style="color:var(--warning); font-weight:bold;">🟡 Bueno:</span> 15 a 24 dB</li>
+                        <li><span style="color:var(--corp-orange); font-weight:bold;">🟠 Malo:</span> 10 a 14 dB</li>
+                        <li><span style="color:var(--danger); font-weight:bold;">🔴 Crítico:</span> Menos de 10 dB</li>
+                    </ul>
+                    
+                    <div class="mini-sim">
+                        <div class="track-container" style="display:flex; align-items:flex-end; padding:0 20px; gap: 20px;">
+                            <div style="flex:1; position:relative; height:100%; border-right: 1px dashed #CCCCCC;">
+                                <div id="bar-sig" class="snr-bar-bg" style="background:var(--success); height: 80%; left:calc(50% - 20px); width:40px;"></div>
+                                <span style="position:absolute; top:5px; left:0; font-size:11px; color:#000000; font-weight:bold;">Señal AP</span>
+                            </div>
+                            <div style="flex:1; position:relative; height:100%;">
+                                <div id="bar-noise" class="snr-bar-bg" style="background:var(--danger); height: 20%; left:calc(50% - 20px); width:40px;"></div>
+                                <span style="position:absolute; top:5px; left:0; font-size:11px; color:#000000; font-weight:bold;">Ruido</span>
+                            </div>
+                        </div>
+
+                        <label>Voz que llega al Oyente (RSSI) <span id="lbl-snr-sig" style="color: var(--success);">-50 dBm</span></label>
+                        <input type="range" id="sim-snr-sig" min="-95" max="-40" value="-50" oninput="updSNR()">
+                        
+                        <label>Murmullo del Salón (Ruido) <span id="lbl-snr-noise" style="color: var(--danger);">-90 dBm</span></label>
+                        <input type="range" id="sim-snr-noise" min="-100" max="-70" value="-90" oninput="updSNR()">
+                        
+                        <div id="out-snr" class="mini-sim-result" style="margin-top: 10px;"></div>
+                    </div>
+                </div>
+
+                <div class="analogy-box" style="border-left-color: var(--danger);">
+                    <h4 style="color: var(--corp-light-blue);">🧱 Atenuación (Hablar a través de los muros)</h4>
+                    <p><b>Concepto Técnico:</b> Pérdida de potencia de la onda electromagnética al atravesar materiales físicos.</p>
+                    <p><b>La Analogía:</b> La voz pasa un poco si el muro es de Drywall, pero desaparece casi por completo si es un muro estructural de concreto pesado.</p>
+                    
+                    <div class="mini-sim" style="margin-top: 0;">
+                        <p style="margin-top: 0; font-size: 13px; color: #000000; font-weight:bold;">La señal sale del AP a <b>-50 dBm</b> e impacta el obstáculo:</p>
+                        
+                        <div class="track-container" style="display: flex; align-items: center; justify-content: space-between; padding: 0 25px; background: #FFFFFF; height: 75px;">
+                            <div style="text-align: center; line-height: 1.2; display:flex; flex-direction:column; align-items:center;">
+                                <svg class="ap-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:32px; height:32px;">
+                                    <rect x="2" y="2" width="20" height="20" rx="4" ry="4" fill="rgba(0,30,180,0.1)"/>
+                                    <circle cx="12" cy="12" r="2" fill="currentColor"/>
+                                </svg>
+                                <span style="display: block; font-size: 11px; font-weight: bold; color: var(--success); margin-top:2px;">-50 dBm</span>
+                            </div>
+                            
+                            <div class="wave-anim" style="width: 50px; height: 20px;">
+                                <svg viewBox="0 0 50 20" style="width:100%; height:100%; stroke:var(--success); stroke-width:3; fill:none; stroke-linecap:round;">
+                                    <path class="wave-path" d="M0,10 Q10,0 20,10 T40,10 T60,10" />
+                                </svg>
+                            </div>
+                            
+                            <div id="visual-wall" style="width: 0px; height: 100%; background: transparent; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: #000000; white-space: nowrap;"></div>
+                            
+                            <div class="wave-anim" style="width: 50px; height: 20px;">
+                                <svg id="wave-out-svg" viewBox="0 0 50 20" style="width:100%; height:100%; stroke:var(--success); stroke-width:3; fill:none; stroke-linecap:round; transition: all 0.3s;">
+                                    <path class="wave-path" d="M0,10 Q10,0 20,10 T40,10 T60,10" />
+                                </svg>
+                            </div>
+
+                            <div style="text-align: center; line-height: 1.2; padding-top: 5px;">
+                                <span style="font-size: 22px;">📱</span>
+                                <span id="visual-wall-client-dbm" style="display: block; font-size: 11px; font-weight: bold; color: #000000;">-- dBm</span>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; gap:8px; margin-bottom:15px; flex-wrap: wrap;">
+                            <button onclick="updWall(3, 'Drywall', '#CCCCCC', this)" class="tab-btn btn-wall" style="padding:6px 10px; font-size:12px; border-color:var(--border);">Drywall (-3dB)</button>
+                            <button onclick="updWall(6, 'Ladrillo', '#FB561E', this)" class="tab-btn btn-wall" style="padding:6px 10px; font-size:12px; border-color:var(--border);">Ladrillo (-6dB)</button>
+                            <button onclick="updWall(10, 'Vidrio Doble', '#44C8F5', this)" class="tab-btn btn-wall" style="padding:6px 10px; font-size:12px; border-color:var(--border);">Vidrio D. (-10dB)</button>
+                            <button onclick="updWall(15, 'Concreto', '#00005A', this)" class="tab-btn btn-wall" style="padding:6px 10px; font-size:12px; border-color:var(--border);">Concreto (-15dB)</button>
+                        </div>
+                        <div id="out-wall" class="mini-sim-result">Selecciona un material 👆</div>
+                    </div>
+                </div>
+
+                <div class="analogy-box" style="border-left-color: var(--corp-orange);">
+                    <h4 style="color: var(--corp-light-blue);">📻 Bandas de Frecuencia (Las Autopistas)</h4>
+                    <p><b>Concepto Técnico:</b> Los rangos del espectro de radio (2.4 GHz, 5 GHz y 6 GHz) autorizados para transmisión Wi-Fi.</p>
+                    <p><b>La Analogía:</b> Imagina que el aire es el sistema vial de tu ciudad y las bandas son los tipos de <b>autopistas</b> por las que viajan los datos:</p>
+                    <ul style="font-size: 14px; margin-top: 0; padding-left: 20px; margin-bottom: 20px; color: #000000;">
+                        <li><b>La Calle Vieja (2.4 GHz):</b> Llega muy lejos (atraviesa muros fácilmente), pero está llena de tráfico desordenado (Bluetooth, microondas, otros APs vecinos). Es un solo carril, muy ruidoso, congestionado y lento.</li>
+                        <li><b>La Vía Rápida (5 GHz):</b> Una autopista moderna de múltiples carriles. Permite a los carros ir a altas velocidades de forma organizada, pero no llega a los pueblos lejanos (menor alcance físico y le cuesta mucho penetrar paredes gruesas).</li>
+                        <li><b>El Viaducto VIP (6 GHz):</b> Una supercarretera recién construida. Ancha, sin interferencia antigua y velocidad absurda. Pero solo los "autos del año" (dispositivos compatibles Wi-Fi 6E/7) tienen permiso para circular ahí.</li>
+                    </ul>
+                </div>
+
+                <div class="analogy-box" style="border-left-color: var(--corp-blue);">
+                    <h4 style="color: var(--corp-light-blue);">🛣️ Canales de Frecuencia (Los Carriles)</h4>
+                    <p><b>Concepto Técnico:</b> Subdivisiones específicas (de 20 MHz, 40 MHz, etc.) dentro de una Banda donde opera el Access Point.</p>
+                    <p><b>La Analogía:</b> Para organizar los autos dentro de esas grandes autopistas, el gobierno pinta <b>Carriles (Canales)</b> en el asfalto.</p>
+                    <ul style="font-size: 14px; margin-top: 0; padding-left: 20px; margin-bottom: 20px; color: #000000;">
+                        <li><b>La Congestión (Co-Canal / CCI):</b> Si pones dos APs cercanos a operar en el "Canal 1", es como obligar a todos a ir por el <b>mismo carril</b>. Se forma un trancón porque los equipos tienen que "frenar y pedir permiso" para transmitir. El Wi-Fi se pone a paso de tortuga.</li>
+                        <li><b>El Bus Gigante (Channel Bonding):</b> Si unes canales (ej. pasar de 20 a 40 MHz), es como borrar la línea entre dos carriles para meter un camión enorme de datos. Es súper rápido para un solo usuario, pero abarcas media autopista y estrellas a los demás. ¡Por eso en corporativo solemos dejar los carriles angostos (20 MHz)!</li>
+                        <li style="margin-top: 10px;"><b>¿Y los 40 MHz en 5 GHz?:</b> ¡Aquí la historia cambia! Como la autopista de 5 GHz es gigante y tiene muchísimos carriles libres, <b>SÍ es muy recomendado</b> usar canales de 40 MHz en oficinas corporativas estándar. Tienes el espacio perfecto para que pasen camiones más grandes y las laptops naveguen mucho más rápido sin chocarse. <i>(Excepción: Si estás diseñando para un auditorio o estadio con altísima densidad de personas, es mejor bajarlos a 20 MHz para poder meter muchos Access Points en un espacio pequeño sin que se hagan ruido entre ellos).</i></li>
+                    </ul>
+                </div>
+            </div>
+
+
+<div class="analogy-box" style="grid-column: span 2; border-left-color: var(--corp-dark-blue);">
+                    <h4 style="color: var(--corp-blue); border-bottom: 1px solid var(--border); padding-bottom: 10px;">📖 El Diccionario RF: Entendiendo los Decibelios</h4>
+                    <p style="font-size: 15px;">En el mundo inalámbrico, todo suena a "decibelios", pero miden cosas completamente diferentes. Confundirlos es el error más común al diseñar. Aquí tienes la guía definitiva:</p>
+
+                    <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 15px; margin-bottom: 30px;">
+                        
+                        <div style="background: rgba(255, 0, 100, 0.05); border: 1px solid var(--corp-magenta); padding: 15px; border-radius: 8px;">
+                            <h5 style="margin: 0 0 5px 0; color: var(--corp-magenta); font-size: 16px;">🔋 dBm (Decibelio-milivatio) = LA ENERGÍA ABSOLUTA</h5>
+                            <p style="margin: 0; font-size: 14px; color: #000000;"><b>¿Qué mide?:</b> La cantidad física y real de energía que sale del AP (Tx Power) o que llega al celular (RSSI).<br>
+                            <b>La Analogía:</b> Es como el saldo en tu cuenta bancaria. Te dice exactamente cuánto dinero (energía) tienes en un momento dado.</p>
+                        </div>
+                        
+                        <div style="background: rgba(0, 30, 180, 0.05); border: 1px solid var(--corp-blue); padding: 15px; border-radius: 8px;">
+                            <h5 style="margin: 0 0 5px 0; color: var(--corp-blue); font-size: 16px;">⚖️ dB (Decibelio a secas) = LA DIFERENCIA O COMPARACIÓN</h5>
+                            <p style="margin: 0; font-size: 14px; color: #000000;"><b>¿Qué mide?:</b> Una resta o distancia matemática entre dos valores. ¡No emite energía real!<br>
+                            <b>La Analogía:</b> Es como decir <i>"soy 5 años mayor que mi hermano"</i>. No te dice cuántos años tienes, solo la diferencia. Se usa para medir la pérdida al cruzar un muro (Atenuación: -6 dB) o la diferencia contra el ruido (SNR: 25 dB).</p>
+                        </div>
+                        
+                        <div style="background: rgba(251, 86, 30, 0.05); border: 1px solid var(--corp-orange); padding: 15px; border-radius: 8px;">
+                            <h5 style="margin: 0 0 5px 0; color: var(--corp-orange); font-size: 16px;">🔦 dBi (Decibelio Isotrópico) = EL ENFOQUE DE LA ANTENA</h5>
+                            <p style="margin: 0; font-size: 14px; color: #000000;"><b>¿Qué mide?:</b> Qué tanto concentra la señal una antena. Las antenas no crean energía (no tienen motor), solo la deforman.<br>
+                            <b>La Analogía:</b> Imagina un bombillo colgando del techo (0 dBi, ilumina todo pero débil). Si le pones una campana reflectora detrás (como una linterna), enfocas toda la luz hacia un solo lado. La luz llega más lejos con la misma energía. Ese "enfoque" es la ganancia en dBi.</p>
+                        </div>
+                    </div>
+
+                    <h4 style="color: var(--corp-light-blue);">📈 La Escala Logarítmica (Regla del 3 y del 10)</h4>
+                    <p style="font-size: 15px;">Ahora que sabemos que el <b>dBm</b> es energía, debemos entender cómo crece. Funciona exactamente igual que la <b>Escala de Richter</b>. Un sismo grado 6 no es "un pasito" más fuerte que uno grado 5, ¡es 10 veces más destructivo! Memoriza estas reglas de oro:</p>
+                    
+                    <div style="display: flex; gap: 20px; margin-bottom: 20px; flex-wrap: wrap;">
+                        <div style="flex: 1; background: rgba(0, 245, 45, 0.1); border: 1px solid var(--success); padding: 15px; border-radius: 8px;">
+                            <h5 style="margin: 0 0 10px 0; color: var(--success);">La Regla del 3 (Doble / Mitad)</h5>
+                            <ul style="margin: 0; padding-left: 20px; font-size: 14px; color: #000000;">
+                                <li>Subir <b>+3 dB</b> = <b>Multiplica x2</b> la potencia física.</li>
+                                <li>Bajar <b>-3 dB</b> = <b>Divide /2</b> la potencia física.</li>
+                            </ul>
+                        </div>
+                        <div style="flex: 1; background: rgba(255, 0, 100, 0.1); border: 1px solid var(--danger); padding: 15px; border-radius: 8px;">
+                            <h5 style="margin: 0 0 10px 0; color: var(--danger);">La Regla del 10 (Los Ceros)</h5>
+                            <ul style="margin: 0; padding-left: 20px; font-size: 14px; color: #000000;">
+                                <li>Subir <b>+10 dB</b> = <b>Multiplica x10</b> la potencia.</li>
+                                <li>Bajar <b>-10 dB</b> = <b>Divide /10</b> la potencia.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="mini-sim" style="margin-top: 0;">
+                        <label>Si configuras el Tx Power de Aruba en: <span id="lbl-dbm-sim" style="color: var(--corp-magenta); font-size: 15px;">20 dBm</span></label>
+                        <input type="range" id="sim-dbm-mw" min="0" max="30" value="20" oninput="updDbmMw()">
+                        <div id="out-dbm-mw" class="mini-sim-result" style="border-color: var(--corp-magenta); font-size: 20px;">Energía Física: <b>100.00 mW</b></div>
+                        <p style="font-size: 12px; margin: 10px 0 0 0; text-align: center; color: #555;"><i>Desliza de 10 a 20 dBm. Verás que la energía pasa de 10 a 100 mW (se multiplica x10). ¡Bajar la potencia de 20 a 17 dBm le corta la energía exactamente a la mitad!</i></p>
+                    </div>
+                </div>
+
+                    </div>
+                </div>
+        </div>
+    </div>
+
+
+    <div id="tab-distancias" class="tab-content">
+        <div class="card">
+            <h2>Simulador de Distancia y Distribución en Triángulo (Tresbolillo)</h2>
+            <p>Según las guías de diseño validado <b>VRD (Validated Reference Design) de Aruba</b>, la distancia recomendada entre APs en interiores es de <b>15 a 18 metros</b> para operar a potencias óptimas en 5 GHz. Esto asegura un traslape del <b>15% al 20%</b> en los bordes de celda (~-65 dBm).</p>
+            
+            <div style="background: rgba(0, 30, 180, 0.05); padding: 20px; border-radius: 12px; border-left: 4px solid var(--corp-blue); margin-bottom: 25px;">
+                <h4 style="margin: 0 0 5px 0; color: var(--corp-blue);">📐 Geometría de Panal: El diseño multidireccional ideal</h4>
+                <p style="margin: 0; font-size: 14px; color: #000000;">Al desplegarse formando un <b>triángulo equilátero</b>, la intersección central de las celdas circulares encaja a la perfección sin dejar zonas muertas, permitiendo un *roaming* tridimensional perfecto hacia cualquier dirección.</p>
+            </div>
+
+            <div class="sim-container">
+                <div id="sim-status" class="overlap-status" style="background: #FFFFFF; color: var(--success); border: 1px solid var(--success);">Traslape Óptimo (15-20%)</div>
+                
+                <div id="ap1" class="ap-circle">
+                    <svg class="ap-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="position:absolute; top:calc(50% - 22px);"><rect x="2" y="2" width="20" height="20" rx="4" ry="4" fill="rgba(0,0,0,0.1)"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>
+                    <span style="position:absolute; top:-25px; font-weight:bold;">AP 1</span>
+                </div>
+                <div id="ap2" class="ap-circle">
+                    <svg class="ap-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="position:absolute; top:calc(50% - 22px);"><rect x="2" y="2" width="20" height="20" rx="4" ry="4" fill="rgba(0,0,0,0.1)"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>
+                    <span style="position:absolute; top:-25px; font-weight:bold;">AP 2</span>
+                </div>
+                <div id="ap3" class="ap-circle">
+                    <svg class="ap-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="position:absolute; top:calc(50% - 22px);"><rect x="2" y="2" width="20" height="20" rx="4" ry="4" fill="rgba(0,0,0,0.1)"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>
+                    <span style="position:absolute; bottom:-25px; font-weight:bold;">AP 3</span>
+                </div>
+                
+                <div class="slider-container">
+                    <label style="font-weight: bold; font-size: 16px; color:#000000;">Distancia entre los 3 APs: <span id="dist-val" style="color: var(--corp-blue); font-size: 20px;">16</span> Metros</label>
+                    <input type="range" id="dist-slider" min="5" max="35" value="16" oninput="updateDistance()">
+                    <div style="display:flex; justify-content: space-between; font-size: 12px; color: #000000; margin-top: 5px; font-weight:bold;">
+                        <span><10m (Interferencia)</span>
+                        <span>15m-18m (Recomendado)</span>
+                        <span>>20m (Zonas Muertas)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cci-wrapper">
+                <h3 style="color: var(--corp-blue); font-weight: bold; margin-top: 0; font-size: 22px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+                    💥 El Impacto en 2.4 GHz: Gestión de Interferencia Co-Canal (CCI)
+                </h3>
+                <p style="color: #000000; font-size: 15px;">
+                    Al diseñar la red a 15-18 metros logramos celdas perfectas en 5 GHz. Sin embargo, si dejamos los radios de 2.4 GHz encendidos a la misma potencia, sus ondas (más largas) generarán un solapamiento masivo destructivo. Como en 2.4 GHz solo tenemos <b>3 canales limpios (1, 6 y 11)</b>, un diseño denso provocará colisiones de paquetes.
+                </p>
+                
+                <div class="grid-2" style="margin-top: 20px;">
+                    <div class="cci-stage">
+                        <div id="cci-alert-ui" class="cci-overlay-alert">⚠️ ALTA INTERFERENCIA CO-CANAL (CCI) DETECTADA</div>
+                        
+                        <div id="cci-node-1" class="cci-ap-node" style="top: 50%; left: 35%;">36<span>AP 1 (CH 36)</span></div>
+                        <div id="cci-node-2" class="cci-ap-node" style="top: 30%; left: 50%;">44<span>AP 2 (CH 44)</span></div>
+                        <div id="cci-node-3" class="cci-ap-node" style="top: 70%; left: 50%;">149<span>AP 3 (CH 149)</span></div>
+                        <div id="cci-node-4" class="cci-ap-node" style="top: 50%; left: 65%;">157<span>AP 4 (CH 157)</span></div>
+
+                        <div id="cci-cov-1" class="cci-coverage" style="top: 50%; left: 35%;"></div>
+                        <div id="cci-cov-2" class="cci-coverage" style="top: 30%; left: 50%;"></div>
+                        <div id="cci-cov-3" class="cci-coverage" style="top: 70%; left: 50%;"></div>
+                        <div id="cci-cov-4" class="cci-coverage" style="top: 50%; left: 65%;"></div>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; justify-content: flex-start; gap: 15px;">
+                        <div class="controles" style="grid-template-columns: 1fr; background: var(--card); padding: 0; border: none;">
+                            <div class="control-grupo" style="margin-bottom: 10px;">
+                                <label style="font-size: 14px; color: #000000;">1. Vista de Banda de Frecuencia:</label>
+                                <select id="cci-band-select" onchange="MotorCCI.cambiarEscenario()" style="padding:10px; font-weight:bold; border:1px solid var(--border); border-radius:6px; background:#FFF; color:#000;">
+                                    <option value="5g">Banda de 5 GHz (Planificación Base)</option>
+                                    <option value="2g">Banda de 2.4 GHz (Propagación sin Ajustes)</option>
+                                </select>
+                            </div>
+
+                            <div class="control-grupo" id="cci-sol-grupo" style="margin-bottom: 10px; display:none;">
+                                <label style="font-size: 14px; color: var(--corp-orange);">2. Solución de Arquitectura (Aruba AirMatch):</label>
+                                <select id="cci-sol-select" onchange="MotorCCI.cambiarEscenario()" style="padding:10px; font-weight:bold; border:2px solid var(--corp-orange); border-radius:6px; background:#FFF; color:#000;">
+                                    <option value="defecto">Potencia Alta (Caos de Co-Canal)</option>
+                                    <option value="bozal">Asimetría de Celdas (Bajar TX a 2.4 GHz)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="cci-diagnostic-box" class="alerta" style="margin-top: 0; text-align: left; line-height: 1.5; font-size: 14px; padding: 20px;">
+                            </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+    </div>
+
+    <div id="tab-modelos" class="tab-content">
+        <div class="card">
+            <h2>Escogiendo el Hardware Adecuado</h2>
+            <p>Antes de colocar APs en el plano de Aruba Central, debes seleccionar el modelo. Cada uno tiene un propósito específico. Conocerlos evitará que sobre-inviertas o que dejes la red corta de capacidad.</p>
+
+            <div class="grid-2">
+                <div style="background: rgba(0, 30, 180, 0.05); padding: 25px; border-radius: 12px; border-left: 4px solid var(--corp-blue); height: calc(100% - 50px);">
+                    <h4 style="margin: 0 0 10px 0; color: var(--corp-blue);">🛗 La Analogía del Ascensor (Datasheet vs. Realidad)</h4>
+                    <p style="margin: 0; font-size: 14px; color: #000000;">
+                        En las especificaciones técnicas (Datasheet) verás que los APs soportan cifras absurdas como <b>512 o 1024 clientes</b>, pero en la práctica arquitectónica real se diseña calculando un límite mucho menor.
+                        <br><br>
+                        Piensa en esto como en un **Ascensor** que tiene un letrero que dice: <i>"Capacidad Máxima: 20 personas (1500 kg)"</i>. Mecánicamente, los cables de acero soportan ese peso sin romperse (esa es la capacidad de la memoria RAM del AP para guardar direcciones MAC en reposo en el laboratorio). Sin embargo, si metes a las 20 personas ahí adentro al mismo tiempo, irán completamente aplastadas, incómodas y nadie se podrá mover.
+                        <br><br>
+                        En el Wi-Fi ocurre lo mismo: el medio físico es compartido (Half-Duplex). Si conectas a cientos de personas activas en un solo radio, las colisiones de paquetes destruirán la navegación. Por eso, diseñamos para que los usuarios viajen "cómodos" y con excelente velocidad.
+                    </p>
+                </div>
+
+                <div style="background: rgba(251, 86, 30, 0.05); padding: 25px; border-radius: 12px; border-left: 4px solid var(--corp-orange); height: calc(100% - 50px);">
+                    <h4 style="margin: 0 0 10px 0; color: var(--corp-orange);">📻 Concepto Clave: ¿A qué nos referimos con "Radio"?</h4>
+                    <p style="margin: 0; font-size: 14px; color: #000000;">
+                        En el mundo del Wi-Fi corporativo, cuando hablamos de un <b>"Radio"</b>, nos referimos al <b>chip físico (el transmisor/receptor)</b> que está soldado dentro de la tarjeta madre del Access Point y que se encarga exclusivamente de procesar una banda de frecuencia específica.
+                        <br><br>
+                        • <b>El Access Point (AP):</b> Es la "caja" completa (el chasis). Piensa en él como si fuera un computador entero. Tiene su propio procesador (CPU), su memoria RAM y su puerto de red.
+                        <br><br>
+                        • <b>El Radio:</b> Es la "tarjeta de voz" o el motor interno. Cada radio es un chip independiente diseñado para hablar en un solo "idioma" o frecuencia (2.4 GHz, 5 GHz o 6 GHz).
+                        <br><br>
+                        • <b>La Antena:</b> Es la pieza de metal interna que funciona como el "megáfono" para proyectar la señal electromagnética del radio hacia el aire.
+                    </p>
+                </div>
+            </div>
+
+            <div class="grid-3" style="margin-top: 10px;">
+                <div class="ap-model">
+                    <div class="ap-icon-big">
+                        <svg class="ap-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="2" width="20" height="20" rx="4" ry="4" fill="rgba(0,30,180,0.05)"/>
+                            <circle cx="12" cy="12" r="2" fill="currentColor"/>
+                            <path d="M6 6h.01M18 6h.01M6 18h.01M18 18h.01" stroke-width="3" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <h4>Aruba AP-515</h4>
+                    <span class="ap-badge">Dual-Radio / Dual-Band</span>
+                    <p><b>Wi-Fi 6 (802.11ax).</b> Tiene <b>2 radios físicos</b> internos por dentro (como dos motores trabajando bajo el mismo capó). Un radio atiende 2.4 GHz y el otro atiende de forma simultánea la banda de 5 GHz.</p>
+                    
+                    <div class="capacity-box">
+                        <div class="title">👥 Capacidad Soportada</div>
+                        <div class="capacity-row"><span style="color:#000000;">Teórica (Datasheet):</span> <b>512 usuarios / radio</b></div>
+                        <div class="capacity-row" style="color:var(--corp-blue); font-weight:bold; margin-top:5px; border-top:1px dashed #CCCCCC; padding-top:4px;">
+                            <span>Por Radio Práctico:</span> <b>15 a 20</b>
+                        </div>
+                        <div class="capacity-row" style="color:#000000; font-weight:bold;">
+                            <span>Total AP (Chasis):</span> <b style="color:var(--success);">40 a 45 clientes</b>
+                        </div>
+                    </div>
+
+                    <div class="mimo-panel">
+                        <div class="mimo-header">
+                            <span>Capacidad de Canales</span>
+                            <button class="mimo-toggle-btn" onclick="toggleAp515(this)">Ver 5 GHz (4x4)</button>
+                        </div>
+                        <div class="mimo-highway" id="highway-515">
+                            <div class="mimo-lane"><div class="mimo-pulse"></div></div>
+                            <div class="mimo-lane"><div class="mimo-pulse"></div></div>
+                        </div>
+                        <div class="mimo-stats" id="stats-515" style="font-size:11px; font-weight:bold; color:#000000; margin-top:5px;">Modo: 2.4Ghz | 2 Carriles Activos</div>
+                    </div>
+                </div>
+
+                <div class="ap-model">
+                    <div class="ap-icon-big">
+                        <svg class="ap-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--success);">
+                            <rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="rgba(0,245,45,0.05)" stroke="var(--success)"/>
+                            <circle cx="12" cy="12" r="2.5" fill="currentColor"/>
+                            <path d="M6 6h.01M12 5h.01M18 6h.01M5 12h.01M19 12h.01M6 18h.01M12 19h.01M18 18h.01" stroke-width="3" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <h4>Aruba AP-535</h4>
+                    <span class="ap-badge" style="background:rgba(0,245,45,0.2); color:var(--corp-dark-blue);">Alta Densidad (High-Density)</span>
+                    <p><b>Wi-Fi 6.</b> Trae 2 radios de hardware masivos en configuración 4x4. Diseñado específicamente para soportar grandes volúmenes de usuarios concurrentes.</p>
+                    
+                    <div class="capacity-box" style="border-color: rgba(0,245,45,0.4);">
+                        <div class="title" style="color:var(--success);">👥 Capacidad Soportada</div>
+                        <div class="capacity-row"><span style="color:#000000;">Teórica (Datasheet):</span> <b>1024 usuarios / radio</b></div>
+                        <div class="capacity-row" style="color:var(--success); font-weight:bold; margin-top:5px; border-top:1px dashed #CCCCCC; padding-top:4px;">
+                            <span>Por Radio Práctico:</span> <b>25 a 30</b>
+                        </div>
+                        <div class="capacity-row" style="color:#000000; font-weight:bold;">
+                            <span>Total AP (Chasis):</span> <b style="color:var(--success);">40 a 60 clientes</b>
+                        </div>
+                    </div>
+
+                    <div class="mimo-panel" style="border-color: rgba(0,245,45,0.3);">
+                        <div class="mimo-header" style="color: var(--success);">
+                            <span>Autopista Densidad</span>
+                            <span style="font-size:10px; color:#000000;">MU-MIMO 4x4</span>
+                        </div>
+                        <div class="mimo-highway">
+                            <div class="mimo-lane"><div class="mimo-pulse ap-535-pulse"></div></div>
+                            <div class="mimo-lane"><div class="mimo-pulse ap-535-pulse"></div></div>
+                            <div class="mimo-lane"><div class="mimo-pulse ap-535-pulse"></div></div>
+                            <div class="mimo-lane"><div class="mimo-pulse ap-535-pulse"></div></div>
+                        </div>
+                        <div class="mimo-stats" style="font-size:11px; font-weight:bold; color:#000000; margin-top:5px;">4 Carriles Simultáneos</div>
+                    </div>
+                </div>
+
+                <div class="ap-model">
+                    <div class="ap-icon-big">
+                        <svg class="ap-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--corp-magenta);">
+                            <rect x="2" y="2" width="20" height="20" rx="6" ry="6" fill="rgba(255,0,100,0.05)" stroke="var(--corp-magenta)"/>
+                            <circle cx="12" cy="12" r="3" fill="currentColor"/>
+                            <circle cx="12" cy="12" r="6" stroke-dasharray="2,2"/>
+                        </svg>
+                    </div>
+                    <h4>Aruba AP-635</h4>
+                    <span class="ap-badge" style="background:rgba(255,0,100,0.2); color:var(--corp-dark-blue);">Tri-Radio / Tri-Banda</span>
+                    <p><b>Wi-Fi 6E.</b> Esta caja de última generación incluye <b>3 radios físicos independientes</b>: uno para 2.4 GHz, otro para 5 GHz y el nuevo motor para la banda limpia de 6 GHz.</p>
+                    
+                    <div class="capacity-box" style="border-color: rgba(255,0,100,0.4);">
+                        <div class="title" style="color:var(--corp-magenta);">👥 Capacidad Soportada</div>
+                        <div class="capacity-row"><span style="color:#000000;">Teórica (Datasheet):</span> <b>512 usuarios / radio</b></div>
+                        <div class="capacity-row" style="color:var(--corp-magenta); font-weight:bold; margin-top:5px; border-top:1px dashed #CCCCCC; padding-top:4px;">
+                            <span>Por Radio Práctico:</span> <b>15 a 20</b>
+                        </div>
+                        <div class="capacity-row" style="color:#000000; font-weight:bold;">
+                            <span>Total AP (Chasis):</span> <b style="color:var(--success);">40 a 45 clientes</b>
+                        </div>
+                    </div>
+
+                    <div class="mimo-panel" style="border-color: rgba(255,0,100,0.3);">
+                        <div class="mimo-header" style="color: var(--corp-magenta);">
+                            <span>Espectro Tri-Banda</span>
+                            <span style="font-size:10px; color:#000000;">2x2 por Radio</span>
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:4px;">
+                            <div class="mimo-highway" style="padding:3px;"><div class="mimo-lane" style="height:4px;"><div class="mimo-pulse ap-635-pulse-6g"></div></div><div class="mimo-lane" style="height:4px;"><div class="mimo-pulse ap-635-pulse-6g"></div></div></div>
+                            <div class="mimo-highway" style="padding:3px;"><div class="mimo-lane" style="height:4px;"><div class="mimo-pulse ap-635-pulse-5g"></div></div><div class="mimo-lane" style="height:4px;"><div class="mimo-pulse ap-635-pulse-5g"></div></div></div>
+                            <div class="mimo-highway" style="padding:3px;"><div class="mimo-lane" style="height:4px;"><div class="mimo-pulse ap-635-pulse-2g"></div></div><div class="mimo-lane" style="height:4px;"><div class="mimo-pulse ap-635-pulse-2g"></div></div></div>
+                        </div>
+                        <div class="mimo-stats" style="font-size:11px; font-weight:bold; color:#000000; margin-top:5px;">Radios: 6G | 5G | 2.4G</div>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 40px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">🛡️ El Caso Especial: Modo Monitor (AM - Air Monitor)</h3>
+            <div class="grid-2">
+                <div class="ap-model monitor" style="grid-column: span 1; justify-content: flex-start;">
+                    <div class="ap-icon-big">
+                        <svg class="ap-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--warning);">
+                            <rect x="2" y="2" width="20" height="20" rx="4" ry="4" fill="none"/>
+                            <path d="M12 7v5l3 3" stroke-linecap="round"/>
+                            <circle cx="12" cy="12" r="9" stroke-dasharray="4,2"/>
+                        </svg>
+                    </div>
+                    <h4 style="color: var(--corp-dark-blue);">Aruba AP-505 en Modo AM</h4>
+                    <span class="ap-badge">Guardaespaldas del Aire</span>
+                    
+                    <div style="text-align: left; font-size: 14px; color: #000000; margin-top: 10px;">
+                        <p><b>¿Qué hace un Air Monitor?</b></p>
+                        <ul style="margin-top: 0; padding-left: 20px;">
+                            <li><b>No da Wi-Fi:</b> Apaga sus SSIDs. Solo escucha.</li>
+                            <li><b>WIDS/WIPS:</b> Detecta Rogue APs y mitiga amenazas en el aire.</li>
+                            <li><b>Análisis de Espectro:</b> Mide interferencia no-Wi-Fi constante.</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div style="display: flex; flex-direction: column; padding: 0 10px;">
+                    <p style="margin-top:0; font-weight:bold; color:var(--corp-blue);">📍 Regla de Ubicación de un AM en el Plano:</p>
+                    <p style="font-size:14px; color:#000000; margin-top:0;">Se recomienda instalar <b>1 Air Monitor por cada 4 o 5 Access Points</b> que dan servicio. Los mejores lugares para colocarlos son:</p>
+                    <ul style="font-size:14px; color:#000000; margin-top:0; margin-bottom:10px;">
+                        <li><b>En el medio (Centroide):</b> Intercalados entre un grupo de 4 APs para vigilar su espectro.</li>
+                        <li><b>En el Perímetro:</b> Cerca de ventanas o paredes exteriores para detectar amenazas externas.</li>
+                    </ul>
+
+                    <div class="radar-box">
+                        <div class="radar-box-grid"></div>
+                        <div class="am-ap-node" style="top:25%; left:25%;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg><span style="font-size:9px; font-weight:bold; color:var(--corp-blue);">AP 1</span></div>
+                        <div class="am-ap-node" style="top:25%; left:75%;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg><span style="font-size:9px; font-weight:bold; color:var(--corp-blue);">AP 2</span></div>
+                        <div class="am-ap-node" style="top:75%; left:25%;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg><span style="font-size:9px; font-weight:bold; color:var(--corp-blue);">AP 3</span></div>
+                        <div class="am-ap-node" style="top:75%; left:75%;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg><span style="font-size:9px; font-weight:bold; color:var(--corp-blue);">AP 4</span></div>
+                        
+                        <div class="am-center-node">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 7v5l3 3" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke-dasharray="4,2"/></svg>
+                            <span style="font-size:10px; font-weight:bold; color:var(--corp-dark-blue); background:rgba(255, 190, 0, 0.8); padding:2px; border-radius:4px; margin-top:2px;">AM-505</span>
+                        </div>
+                        <div class="radar-sweep"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-reglas" class="tab-content">
+        <div class="card">
+            <h2>Consideraciones Para Mapas de Calor</h2>
+            <p>Para que el mapa de calor que vas a diseñar en Aruba Central sea <b>100% fiel a la realidad</b> de nuestro entorno de producción, es crítico respetar las alturas físicas de montaje y configurar los APs virtuales con los Radio Profile exactos que manejamos para el proyecto.</p>
+            
+            <div class="grid-2" style="margin-top: 30px;">
+                <div style="background: var(--corp-grey); padding: 25px; border-radius: 12px; border: 1px solid var(--border);">
+                    <h3 style="color: #000000; margin-top: 0; border-bottom: 1px solid var(--border); padding-bottom: 10px;">📏 Altura y Montaje Físico</h3>
+                    <ul style="color: #000000; padding-left: 20px;">
+                        <li style="margin-bottom: 15px;"><b>✅ Altura Óptima (2.5m a 3.5m):</b> Los APs omnidireccionales de techo están diseñados para "iluminar" hacia abajo en forma de paraguas. Si los instalas en este rango, garantizas la mejor huella de cobertura celular.</li>
+                        <li style="margin-bottom: 15px;"><b>⚠️ Techos Altos (>4 Metros):</b> En bodegas o recepciones muy altas, la señal llegará atenuada al suelo. En tus planos debes considerar y recomendar el uso de <b>soportes de caída (pendants)</b> para bajar el AP, o bien antenas direccionales.</li>
+                        <li style="margin-bottom: 15px;"><b>❌ Cuidado con el Montaje en Pared:</b> Si pones un AP plano de techo "acostado" contra la pared, el 50% de la energía se proyectará hacia el techo y el otro 50% hacia el piso, destruyendo el alcance horizontal y creando huecos de cobertura.</li>
+                        <li><b>❌ Obstáculos Inmediatos:</b> Al colocar el AP en el software de diseño, asume que físicamente no debe quedar pegado a vigas metálicas gruesas, ductos de HVAC o dentro de plafones densos.</li>
+                    </ul>
+
+                    <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px; background: #FFFFFF; padding: 25px; border-radius: 12px; border: 1px dashed var(--border);">
+                        <div class="paraguas-stage" style="position: relative; flex: 1; min-width: 300px; height: 320px; background: #FFFFFF; border: 1px solid var(--border); border-radius: 8px; overflow: hidden;">
+                            <div style="width: 100%; height: 20px; background: #CCCCCC; border-bottom: 2px solid #9B9B9B; position: absolute; top: 0; z-index: 5;"></div>
+                            <div id="p-ceiling-error" style="width: 100%; height: 20px; background: rgba(255, 0, 100, 0.8); position: absolute; top: 0; z-index: 6; opacity: 0; transition: 0.3s;"></div>
+                            
+                            <div id="p-ap" style="width: 40px; height: 15px; background: var(--card); border: 2px solid var(--corp-blue); border-radius: 0 0 10px 10px; position: absolute; top: 20px; left: 50%; z-index: 10; transition: transform 0.4s ease-in-out; transform-origin: top center; transform: translateX(-50%);">
+                                <div style="width: 4px; height: 4px; background: var(--success); border-radius: 50%; margin: 2px auto;"></div>
+                            </div>
+
+                            <div id="p-cone" style="position: absolute; top: 20px; left: 50%; width: 220px; height: 125px; background: linear-gradient(to bottom, rgba(0, 30, 180, 0.4), rgba(0, 30, 180, 0.05)); clip-path: polygon(50% 0%, 100% 100%, 0% 100%); transition: all 0.4s ease-in-out; transform-origin: top center; transform: translateX(-50%);"></div>
+                            
+                            <div style="position: absolute; bottom: 0; width: 100%; height: 25px; background: rgba(0,0,0,0.05); border-top: 1px dashed var(--border); text-align: center; font-size: 11px; color: #000000; line-height: 25px; font-weight: bold;">SUELO (Zona de Dispositivos)</div>
+                        </div>
+                        
+                        <div class="paraguas-controls" style="flex: 1; min-width: 250px; display: flex; flex-direction: column; justify-content: center;">
+                            <label style="font-weight: bold; margin-bottom: 10px; color: #000000;">Altura de Instalación: <span id="p-alt-val">3</span> Metros</label>
+                            <input type="range" id="p-alt-slider" min="3" max="8" value="3" oninput="updateParaguas()" style="margin-bottom: 25px;">
+                            
+                            <button id="p-btn-wall" style="width: 100%; padding: 12px; background: var(--corp-grey); border: 1px solid var(--border); color: #000000; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 20px; transition: 0.3s;">🔄 Rotar a Pared (90°)</button>
+                            
+                            <div id="p-alert" class="alerta success" style="margin-top: 0; padding: 12px; font-size: 13px;">✅ <strong>MONTAJE ÓPTIMO:</strong> En techo a altura ideal. Patrón omnidireccional llega con fuerza al suelo.</div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div style="background: var(--corp-grey); padding: 25px; border-radius: 12px; border: 1px solid var(--corp-orange);">
+                    <h3 style="color: var(--corp-dark-blue); margin-top: 0; border-bottom: 1px solid var(--border); padding-bottom: 10px;">📡 Estándares de Configuración por Banda (Cell Sizing)</h3>
+                    <p style="color: #000000; font-size: 14px; margin-top: 0;">Como las ondas de 2.4 GHz viajan más lejos y atraviesan mejor las paredes que las de 5 GHz, los ingenieros configuran potencias diferentes para igualar el tamaño de la cobertura de ambas bandas y evitar que los dispositivos se queden "pegados" a la banda lenta de 2.4 GHz.</p>
+
+                    <div style="background: #FFFFFF; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid var(--corp-blue); border: 1px solid var(--border);">
+                        <h4 style="margin: 0 0 5px 0; color: var(--corp-blue);">Banda de 5 GHz <br><span style="color:var(--corp-blue); font-size:14px; font-family:monospace;">Perfil: PERFIL-DATA</span></h4>
+                        <div style="font-size: 13px; color: #000000; margin-bottom: 10px;">
+                            <span style="color: var(--success); font-weight:bold;">🟢 Estándar Ideal:</span> <b>14 dBm a 18 dBm</b>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-family: monospace; font-size: 15px; color: #000000; border-top: 1px dashed var(--border); padding-top: 10px;">
+                            <span>Min TX EIRP: <b>15 dBm</b></span>
+                            <span>Max TX EIRP: <b>18 dBm</b></span>
+                        </div>
+                    </div>
+
+                    <div style="background: #FFFFFF; padding: 15px; border-radius: 8px; border-left: 4px solid var(--warning); border: 1px solid var(--border);">
+                        <h4 style="margin: 0 0 5px 0; color: var(--corp-dark-blue);">Banda de 2.4 GHz <br><span style="color:var(--corp-orange); font-size:14px; font-family:monospace;">Perfil: PERFIL-DATA-2</span></h4>
+                        <div style="font-size: 13px; color: #000000; margin-bottom: 10px;">
+                            <span style="color: var(--success); font-weight:bold;">🟢 Estándar Ideal:</span> <b>9 dBm a 12 dBm</b><br>
+                            <span style="color: var(--danger); font-weight:bold;">🔴 Cuidado:</span> Más de 12 dBm causará Interferencia.
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-family: monospace; font-size: 15px; color: #000000; border-top: 1px dashed var(--border); padding-top: 10px;">
+                            <span>Min TX EIRP: <b>9 dBm</b></span>
+                            <span>Max TX EIRP: <b>12 dBm</b></span>
+                        </div>
+                    </div>
+                    
+                    <div style="font-size: 13px; background: #FFFFFF; color: #000000; padding: 12px; border-radius: 6px; margin-top: 15px; border: 1px solid var(--corp-blue);">
+                        💡 <b>El Truco del Arquitecto:</b> El estándar de la industria dicta que la banda de 5 GHz debe estar configurada entre <b>3 dBm y 6 dBm por encima</b> de la de 2.4 GHz. Así, las dos áreas de cobertura tendrán exactamente el mismo tamaño físico.
+                    </div>
+
+                    <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px; background: #FFFFFF; padding: 25px; border-radius: 12px; border: 1px dashed var(--border);">
+                        <div class="cell-stage" style="position: relative; flex: 1; min-width: 300px; height: 320px; background: #FFFFFF; border: 1px solid var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                            <div style="position: absolute; width: 100%; height: 100%; background-image: linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.1) 1px, transparent 1px); background-size: 20px 20px;"></div>
+                            
+                            <div id="c-2g" style="position: absolute; width: 270px; height: 270px; border: 2px dashed var(--corp-orange); background: rgba(251, 86, 30, 0.1); border-radius: 50%; transition: all 0.3s ease-out;"></div>
+                            
+                            <div id="c-5g" style="position: absolute; width: 150px; height: 150px; border: 2px solid var(--corp-blue); background: rgba(0, 30, 180, 0.1); border-radius: 50%; transition: all 0.3s ease-out; z-index: 5;"></div>
+                            
+                            <div style="position: absolute; width: 24px; height: 24px; background: white; border-radius: 50%; z-index: 10; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(0,0,0,0.3); font-size: 12px;">📡</div>
+                        </div>
+                        
+                        <div class="cell-controls" style="flex: 1; min-width: 250px; display: flex; flex-direction: column; justify-content: center;">
+                            <label style="color: var(--corp-orange); font-weight: bold; margin-bottom: 10px;">Potencia 2.4 GHz: <span id="c-2g-val">15</span> dBm</label>
+                            <input type="range" id="c-2g-slider" min="3" max="18" value="15" oninput="updateCellSizing()" style="margin-bottom: 20px;">
+                            
+                            <label style="color: var(--corp-blue); font-weight: bold; margin-bottom: 10px;">Potencia 5 GHz: <span id="c-5g-val">15</span> dBm</label>
+                            <input type="range" id="c-5g-slider" min="3" max="21" value="15" oninput="updateCellSizing()" style="margin-bottom: 20px;">
+                            
+                            <div id="c-alert" class="alerta danger" style="margin-top: 0; padding: 12px; font-size: 13px;">❌ <strong>ASIMETRÍA Y RUIDO:</strong> 2.4GHz se comerá toda la pantalla. Alto solapamiento co-canal.</div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <svg style="display:none;">
+        <symbol id="icon-ap" viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1"/></symbol>
+        <symbol id="icon-iphone" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></symbol>
+        <symbol id="icon-mac" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="2" y1="20" x2="22" y2="20"/></symbol>
+        <symbol id="icon-win" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></symbol>
+    </svg>
+
+    <div id="tab-consideraciones" class="tab-content">
+        <div class="considerations-panel">
+            <h2>EIRP (Potencia de Transmisión)</h2>
+            <h3>EIRP Promedio Según el Fabricante</h3>
+            <p>Podemos ver el "grito" promedio (EIRP) de los dispositivos cliente en el mundo real, según las especificaciones de fabricantes como Apple, Intel y Samsung:</p>
+            <ul>
+                <li style="border-left-color: var(--corp-grey);">📱 <b>1. Smartphones (Celulares)</b><br>
+                Son los dispositivos más débiles de la red. Tienen baterías pequeñas y sus antenas están atrapadas dentro de un chasis de metal o cristal, a menudo tapadas por tu propia mano.<br><br>
+                • <b>Potencia de Radio (Tx):</b> 11 dBm a 14 dBm.<br>
+                • <b>Ganancia de Antena:</b> Muy pobre, a veces negativa (-1 dBi a +1 dBi).<br>
+                • <b>EIRP Real:</b> Entre 12 dBm y 15 dBm.<br>
+                <span style="color:var(--corp-orange); font-weight:bold;">💡 Dato curioso:</span> Los dispositivos de Apple (iPhones) son famosamente conservadores con su potencia para ahorrar batería y hacer roaming más rápido. Rara vez pasan de los 14 dBm.</li>
+                
+                <li style="border-left-color: var(--win-color);">💻 <b>2. Laptops y Computadoras Portátiles</b><br>
+                Tienen una ventaja gigante: baterías enormes y pantallas grandes. Los fabricantes (como Apple en sus MacBooks o Intel con sus tarjetas AX210) esconden las antenas en el marco de la pantalla, lo que les da excelente ganancia y separación física.<br><br>
+                • <b>Potencia de Radio (Tx):</b> 15 dBm a 18 dBm.<br>
+                • <b>Ganancia de Antena:</b> 2 dBi a 3 dBi.<br>
+                • <b>EIRP Real:</b> Entre 17 dBm y 20 dBm.</li>
+                
+                <li style="border-left-color: var(--danger);">⌚ <b>3. Dispositivos IoT (Relojes, Escáneres de código, Focos, TVs)</b><br>
+                Son los peores clientes posibles. Sus chips Wi-Fi son extremadamente baratos, a menudo de una sola antena (1x1), y su objetivo principal es no gastar energía.<br><br>
+                • <b>EIRP Real:</b> Entre 9 dBm y 12 dBm.</li>
+            </ul>
+
+            <h3>EIRP Promedio Según el Modelo de AP</h3>
+            <ul>
+                <li style="border-left-color: var(--corp-blue);">🚀 <b>1. Aruba AP-515</b><br>
+                Es un equipo asimétrico: 2x2 en 2.4 GHz, pero un masivo 4x4 en 5 GHz con un "megáfono" (antena) enorme.<br><br>
+                • <b>Banda 2.4 GHz:</b> 21 dBm (Radio) + 4.2 dBi (Antena) = 25.2 dBm de EIRP Máximo<br>
+                • <b>Banda 5 GHz:</b> 24 dBm (Radio) + 7.5 dBi (Antena) = 31.5 dBm de EIRP Máximo</li>
+                
+                <li style="border-left-color: var(--success);">🦖 <b>2. Aruba AP-535</b><br>
+                Este es el equipo que pones en auditorios, estadios pequeños o cafeterías llenas. Tiene una potencia de radio bruta muy alta en ambas bandas (24 dBm).<br><br>
+                • <b>Banda 2.4 GHz:</b> 24 dBm (Radio) + 3.5 dBi (Antena) = 27.5 dBm de EIRP Máximo<br>
+                • <b>Banda 5 GHz:</b> 24 dBm (Radio) + 5.4 dBi (Antena) = 29.4 dBm de EIRP Máximo<br>
+                <span style="color:var(--corp-orange); font-weight:bold;">💡 Nota:</span> Curiosamente, aunque el 535 es más "poderoso" en procesamiento que el 515, el 515 logra un EIRP mayor en 5GHz (31.5 dBm vs 29.4 dBm). Esto se debe a que las antenas del 535 están diseñadas para densidad y no tanto para distancia.</li>
+                
+                <li style="border-left-color: var(--corp-grey);">🛸 <b>3. Aruba AP-635 (La nueva generación Wi-Fi 6E / Tri-Banda)</b><br>
+                Este modelo añade la nueva pista de carreras de 6 GHz. Está perfectamente balanceado con un diseño 2x2 en sus tres radios, cada uno inyectando 21 dBm de potencia física.<br><br>
+                • <b>Banda 2.4 GHz:</b> 21 dBm (Radio) + 4.6 dBi (Antena) = 25.6 dBm de EIRP Máximo<br>
+                • <b>Banda 5 GHz:</b> 21 dBm (Radio) + 7.0 dBi (Antena) = 28.0 dBm de EIRP Máximo<br>
+                • <b>Banda 6 GHz:</b> 21 dBm (Radio) + 6.3 dBi (Antena) = 27.3 dBm de EIRP Máximo</li>
+                
+                <li style="border-left-color: var(--danger); background: rgba(255, 0, 100, 0.05);">⚠️ <b>La "Trampa" del EIRP Máximo (Consejo de Arquitectura)</b><br>
+                Sabiendo que el AP-535 puede gritar a casi 30 dBm y el AP-515 a 31.5 dBm, aquí va el consejo de oro: En el mundo corporativo NUNCA debes permitir que lleguen a ese nivel.<br><br>
+                <b>¿Por qué?</b> Porque ocurre la asimetría severa:<br>
+                1. El AP-535 está configurado al máximo y grita a 29.4 dBm.<br>
+                2. Un celular normal (como un iPhone) a 50 metros lo escucha perfecto y dice: "¡Genial, tengo 4 rayitas de señal, me quedo conectado!".<br>
+                3. Pero el celular solo tiene fuerza física para "gritar de vuelta" a unos 14 dBm o 15 dBm (porque su batería y antena son diminutas).<br>
+                4. El AP no logra escuchar lo que el celular responde, se disparan los Reitentos, y el usuario llama a quejarse diciendo: "Tengo todas las rayitas de Wi-Fi llenas, pero el internet no me carga nada".<br><br>
+                <b>La solución RF:</b> En los perfiles de radio de Aruba Central, los arquitectos solemos ponerle un "bozal" al ARM (Adaptive Radio Management). Por ejemplo, limitar el Max-EIRP en 5 GHz a 18 o 21 dBm máximo, y en 2.4 GHz a unos 12 o 15 dBm. Esto "encoge" la celda a propósito para que el AP solo hable con los clientes que están lo suficientemente cerca como para que ambos se escuchen al mismo volumen.</li>
+            </ul>
+
+            <div class="controles" style="margin-top: 20px;">
+                <div style="grid-column: span 2;">
+                    <div style="position: relative; height: 130px; background: #FFFFFF; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 15px;">
+                        <div style="position: absolute; left: 15px; top: 10px; font-size: 20px; z-index: 10; font-weight: bold; color: var(--corp-blue);">📡 AP Central</div>
+                        <div id="eirp-ap-cov" style="position: absolute; left: 0; top: 40px; height: 35px; background: linear-gradient(90deg, rgba(0,30,180,0.8), rgba(0,30,180,0)); width: 100%; transition: width 0.4s ease-out; border-radius: 0 15px 15px 0;"></div>
+                        
+                        <div id="eirp-client-icon" style="position: absolute; right: 0; top: 10px; font-size: 20px; z-index: 10; font-weight: bold; color: var(--success); transition: right 0.4s ease-out; margin-right: 15px;">📱 Cliente (Borde)</div>
+                        <div id="eirp-client-cov" style="position: absolute; right: 0; top: 80px; height: 35px; background: linear-gradient(-90deg, rgba(0,245,45,0.8), rgba(0,245,45,0)); width: 46.6%; transition: right 0.4s ease-out; border-radius: 15px 0 0 15px;"></div>
+                    </div>
+                </div>
+                <div class="control-grupo">
+                    <label style="color: var(--corp-blue);">Potencia AP (EIRP): <span id="eirp-ap-val">30</span> dBm</label>
+                    <input type="range" id="eirp-ap-slider" min="10" max="30" value="30" oninput="updateEIRP()">
+                </div>
+                <div class="control-grupo">
+                    <label style="color: #000000;">Potencia Celular: 14 dBm (Fijo por Hardware)</label>
+                    <input type="range" disabled value="14" max="30" style="opacity: 0.3;">
+                </div>
+                <div id="eirp-alert" class="alerta danger" style="grid-column: span 2; margin-top: 0;">❌ <strong>ASIMETRÍA SEVERA:</strong> El cliente en el borde escucha al AP a 30 dBm, pero su respuesta (14 dBm) muere en el camino y no llega de vuelta.</div>
+            </div>
+
+            <h2 style="margin-top:40px;">RSSI (Fuerza de Llegada)</h2>
+            <ul>
+                <li style="border-left-color: var(--success);">🟢 <b>Excelente (-30 a -60 dBm):</b> Ideal para aplicaciones de alta demanda (Voz sobre IP, videoconferencias HD, streaming 4K). Máximo rendimiento.</li>
+                <li style="border-left-color: var(--warning);">🟡 <b>Bueno / Aceptable (-61 a -70 dBm):</b> El estándar mínimo para navegación web, correos y bases de datos. Las videollamadas aún funcionan, pero es el límite de diseño corporativo.</li>
+                <li style="border-left-color: var(--corp-orange);">🟠 <b>Malo / Límite (-71 a -80 dBm):</b> La señal es muy débil. El dispositivo empezará a buscar desesperadamente otro Access Point para hacer roaming. La velocidad cae drásticamente.</li>
+                <li style="border-left-color: var(--danger);">🔴 <b>Crítico (-81 dBm o menos):</b> Zona muerta o "fuera de cobertura". Desconexiones constantes y pérdida total de paquetes.</li>
+            </ul>
+
+            <h2 style="margin-top:40px;">SNR (Signal-to-Noise Ratio)</h2>
+            <p><b>SNR (Signal-to-Noise Ratio):</b> Es la diferencia entre el RSSI y el ruido de fondo (estática de microondas, Bluetooth, etc.). Si el RSSI es -60 y el ruido es -95, el SNR es 35 dB (una señal muy clara).<br><b>¿Qué es?:</b> No mide el volumen, sino la diferencia entre el volumen del celular y el ruido de fondo del ambiente.</p>
+            <ul>
+                <li style="border-left-color: var(--success);">🟢 <b>Excelente (25 dB o más):</b> El aire está perfectamente limpio. Permite usar modulaciones de altísima velocidad (como 256-QAM o 1024-QAM en Wi-Fi 6).</li>
+                <li style="border-left-color: var(--warning);">🟡 <b>Bueno (15 a 24 dB):</b> Conexión confiable para datos. Velocidades promedio.</li>
+                <li style="border-left-color: var(--corp-orange);">🟠 <b>Malo (10 a 14 dB):</b> El ruido ambiental está tapando casi por completo la señal. Las velocidades de modulación caen al mínimo para sobrevivir.</li>
+                <li style="border-left-color: var(--danger);">🔴 <b>Crítico (Menos de 10 dB):</b> Es el equivalente a intentar hablar en un concierto de rock. Prácticamente imposible transmitir datos sin que se corrompan.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="tab-roaming" class="tab-content">
+        <div class="card" style="margin-bottom: 30px; border-left: 4px solid var(--corp-blue);">
+            <h2 style="color: var(--corp-blue); margin-top: 0; border-bottom: 1px solid var(--border); padding-bottom: 10px;">🚶‍♂️ ¿Qué es el Roaming? (La Transición)</h2>
+            <p style="color: #000000;"><b>El Concepto:</b> Es la capacidad de un dispositivo cliente (como tu celular o laptop) de saltar de un Access Point a otro mientras caminas por la oficina, <b>sin perder la conexión</b> (sin que se te caiga la llamada de Teams o se pause una descarga).</p>
+            <p style="color: #000000;"><b>La Regla de Oro (El Mito del AP):</b> Muchas veces se cree que la red empuja al usuario, pero la realidad es que <strong>¡El Access Point NO decide el Roaming!</strong> Quien toma la decisión de soltarse de un AP y agarrarse al siguiente es <b>siempre el dispositivo cliente</b> (el driver de la tarjeta de red de tu iPhone, Mac, o PC). Los ingenieros de red solo podemos "guiarlo" (manipulando la potencia del AP, el tamaño de la celda y los umbrales de señal) para "forzarlo" a tomar la decisión a tiempo y evitar que se quede conectado a un AP lejano que apenas escucha (lo que conocemos como <i>Sticky Client</i>).</p>
+        </div>
+
+        <div class="dashboard">
+            <h2>Auditoría Visual de Roaming</h2>
+            <div class="roam-mapa">
+                <svg style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:1;">
+                    <line id="roam-linea" class="linea-conn" x1="20%" y1="65" x2="50%" y2="140" stroke="var(--success)" />
+                </svg>
+                
+                <div class="icono-ap" style="left: 20%;"><svg class="svg-icon" style="width:20px;height:20px;"><use href="#icon-ap"></use></svg><span>AP 1</span></div>
+                <div class="icono-ap" style="left: 80%;"><svg class="svg-icon" style="width:20px;height:20px;"><use href="#icon-ap"></use></svg><span>AP 2</span></div>
+                
+                <div id="roam-usuario" class="icono-disp" style="left: 50%; top: 125px; background: var(--danger);">
+                    <svg class="svg-icon" style="width:18px;height:18px;"><use href="#icon-iphone"></use></svg>
+                </div>
+            </div>
+
+            <div class="metricas">
+                <div class="tarjeta"><h3>RSSI AP 1</h3><div id="roam-val1" class="valor">-60 <span>dBm</span></div></div>
+                <div class="tarjeta"><h3>RSSI AP 2</h3><div id="roam-val2" class="valor">-55 <span>dBm</span></div></div>
+                <div class="tarjeta" id="roam-tarj-conn" style="border-bottom: 4px solid var(--success);">
+                    <h3>Conectado A</h3><div id="roam-conn" class="valor" style="color: var(--success);">AP 1</div>
+                </div>
+            </div>
+            <div id="roam-alerta" class="alerta"></div>
+
+            <div class="controles">
+                <div class="control-grupo">
+                    <label>EIRP AP 1: <span id="roam-lbl1" style="color:var(--corp-blue)">21</span> dBm</label>
+                    <input type="range" id="roam-slider1" min="10" max="30" value="21">
+                </div>
+                <div class="control-grupo">
+                    <label>EIRP AP 2: <span id="roam-lbl2" style="color:var(--corp-blue)">12</span> dBm</label>
+                    <input type="range" id="roam-slider2" min="10" max="30" value="12">
+                </div>
+                <div class="control-grupo" style="grid-column: span 2;">
+                    <label>Caminar (Metros): <span id="roam-lblpos" style="color:#000000">6.5</span> m</label>
+                    <input type="range" id="roam-pos" min="0" max="13" step="0.1" value="6.5">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-marcas" class="tab-content">
+        <div class="dashboard">
+            <h2>Carrera de Roaming: Comportamiento por Fabricante</h2>
+            <p>En el Wi-Fi, los Access Points siguen reglas súper estrictas dictadas por la norma internacional IEEE 802.11, pero la decisión de hacer Roaming no la toma el AP, la toma el chip del cliente (el celular o la laptop). Y aquí es donde cada fabricante hace lo que se le da la gana con sus algoritmos privados.</p>
+            <ul>
+                <li style="border-left-color: var(--corp-grey); padding-left:15px;">🍎 <b>Apple (iPhone e iPad):</b> Son los más estrictos y predecibles. Apple tiene documentado oficialmente en su arquitectura que iOS comienza a buscar un nuevo Access Point exactamente cuando la señal cae a <b>-70 dBm</b>. Ni un decibel más, ni uno menos.</li>
+                <li style="border-left-color: var(--corp-grey); padding-left:15px;">💻 <b>Apple (Laptops MacBook):</b> Aquí cambia la cosa. Como las MacBooks tienen antenas mucho más grandes de aluminio integradas en la pantalla, Apple programó el sistema operativo (macOS) para que sea más tolerante. Las Mac solo empiezan a buscar otro AP cuando la señal cae a <b>-75 dBm</b>. Esto significa que una Mac se quedará "pegada" al AP viejo mucho más tiempo que un iPhone.</li>
+                <li style="border-left-color: var(--win-color); padding-left:15px;">🪟 <b>Windows (Chips Intel/Realtek):</b> Windows no tiene un umbral fijo; ¡te deja configurarlo a ti! Si alguna vez entras al Administrador de Dispositivos y vas a las propiedades de la tarjeta Wi-Fi, verás una opción llamada "Roaming Aggressiveness" (Agresividad de Itinerancia). En "Medio" (por defecto) suele rondar los -70 dBm, pero si lo pones en "Máximo", la laptop se vuelve súper impaciente y saltará apenas la señal baje a <b>-65 dBm</b>.</li>
+                <li style="border-left-color: var(--success); padding-left:15px;">🤖 <b>Android:</b> Es la anarquía total. Como el código base lo modifica Samsung, Xiaomi, Motorola, etc., varía muchísimo. Por lo general, está anclado en el código fuente (wpa_supplicant) entre <b>-70 dBm y -73 dBm</b>, pero incluso el modo de "Ahorro de Batería" del celular puede alterar esta métrica para evitar que el chip gaste energía buscando antenas.</li>
+            </ul>
+
+            <h2 style="margin-top:30px;">Agresividad de Itinerancia en Windows</h2>
+            <p>Esta es la configuración más crítica para entornos corporativos o de múltiples APs. Un dato muy importante es que Intel no basa el salto exclusivamente en una métrica estricta de dBm (decibelios-milivatio). En su lugar, el adaptador utiliza un algoritmo interno llamado RSSI (Received Signal Strength Indicator). Este algoritmo evalúa una combinación de factores: la fuerza de la señal, la degradación del enlace, las tasas de transmisión/recepción y el porcentaje de pérdida de paquetes.</p>
+            <p>Sin embargo, a nivel de industria y mediante análisis de tráfico, estos umbrales algorítmicos se traducen aproximadamente en las siguientes métricas de dBm:</p>
+            <ul>
+                <li style="border-left-color: var(--corp-grey); padding-left:15px;"><b>1. Mínimo (Lowest):</b> El equipo se aferra al Punto de Acceso (AP) actual y no realizará roaming a menos que la degradación del enlace sea extrema.<br>○ Métrica umbral: El equipo espera a que la señal caiga a niveles críticos, a menudo por debajo de -80 dBm, antes de buscar otra antena.</li>
+                <li style="border-left-color: var(--corp-orange); padding-left:15px;"><b>2. Medio-bajo (Medium-Low):</b> Permite el roaming pero sigue siendo muy conservador respecto al salto.<br>○ Métrica umbral: Escanea buscando un nuevo AP cuando la señal cae de forma moderada, alrededor de -75 dBm.</li>
+                <li style="border-left-color: var(--success); padding-left:15px;"><b>3. Medio (Medium):</b> Es el valor por defecto y el recomendado por los fabricantes, ya que equilibra la estabilidad de la conexión y el rendimiento.<br>○ Métrica umbral: Inicia el escaneo y el proceso de salto cuando la señal baja de la franja de -65 dBm a -70 dBm.</li>
+                <li style="border-left-color: var(--corp-blue); padding-left:15px;"><b>4. Medio-alto (Medium-High):</b> El adaptador es mucho más proactivo y el roaming ocurre de forma más frecuente.</li>
+                <li style="border-left-color: var(--danger); padding-left:15px;"><b>5. Máximo (Highest):</b> El equipo evalúa la red continuamente en busca del AP perfecto.<br>○ Métrica umbral: Incluso si la señal actual es excelente (entre -50 dBm y -60 dBm), si el adaptador detecta un AP con una señal marginalmente superior, forzará el salto. Esto es lo que causa inestabilidad y microcortes ("ping-pong") en oficinas con muchos Puntos de Acceso.</li>
+            </ul>
+            <p style="color:#000000; margin-top:-10px; margin-bottom:20px; font-size:14px; font-weight:bold;">
+                Observa cómo cada dispositivo decide saltar de antena en un momento físico distinto debido a sus algoritmos internos (Umbral de Roaming).
+            </p>
+
+            <div class="marcas-mapa">
+                <svg style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:1;">
+                    <line id="m-linea-win" class="linea-conn" x1="15%" y1="65" x2="50%" y2="115" stroke="var(--win-color)" />
+                    <line id="m-linea-ios" class="linea-conn" x1="15%" y1="65" x2="50%" y2="175" stroke="var(--danger)" />
+                    <line id="m-linea-mac" class="linea-conn" x1="15%" y1="65" x2="50%" y2="235" stroke="var(--mac-color)" />
+                </svg>
+                
+                <div class="icono-ap" style="left: 15%;"><svg class="svg-icon" style="width:20px;height:20px;"><use href="#icon-ap"></use></svg><span>AP 1</span></div>
+                <div class="icono-ap" style="left: 85%;"><svg class="svg-icon" style="width:20px;height:20px;"><use href="#icon-ap"></use></svg><span>AP 2</span></div>
+                
+                <div id="m-win" class="icono-disp" style="left: 50%; top: 100px; background: var(--win-color);">
+                    <svg class="svg-icon" style="width:18px;height:18px;"><use href="#icon-win"></use></svg>
+                </div>
+                <div id="m-ios" class="icono-disp" style="left: 50%; top: 160px; background: var(--danger);">
+                    <svg class="svg-icon" style="width:18px;height:18px;"><use href="#icon-iphone"></use></svg>
+                </div>
+                <div id="m-mac" class="icono-disp" style="left: 50%; top: 220px; background: var(--mac-color);">
+                    <svg class="svg-icon" style="width:18px;height:18px;"><use href="#icon-mac"></use></svg>
+                </div>
+            </div>
+
+            <div style="background: #FFFFFF; padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 25px;">
+                <h3 style="margin-top:0; color:var(--corp-light-blue); font-size:13px; text-transform:uppercase; font-weight:bold;">Telemetría en Vivo</h3>
+                
+                <div class="tarjeta-marca">
+                    <div class="marca-tag"><div style="width:12px;height:12px;background:var(--win-color);border-radius:50%;"></div> PC Windows (Medio: -65 dBm)</div>
+                    <div class="marca-rssi" id="t-rssi-win">-40 dBm</div>
+                    <div class="marca-ap" id="t-ap-win" style="background:rgba(0,30,180,0.1); color:var(--corp-blue);">Conectado a AP 1</div>
+                </div>
+                
+                <div class="tarjeta-marca">
+                    <div class="marca-tag"><div style="width:12px;height:12px;background:var(--danger);border-radius:50%;"></div> iPhone iOS (Estándar: -70 dBm)</div>
+                    <div class="marca-rssi" id="t-rssi-ios">-40 dBm</div>
+                    <div class="marca-ap" id="t-ap-ios" style="background:rgba(0,30,180,0.1); color:var(--corp-blue);">Conectado a AP 1</div>
+                </div>
+
+                <div class="tarjeta-marca">
+                    <div class="marca-tag"><div style="width:12px;height:12px;background:var(--mac-color);border-radius:50%;"></div> MacBook macOS (Tolerante: -75 dBm)</div>
+                    <div class="marca-rssi" id="t-rssi-mac">-40 dBm</div>
+                    <div class="marca-ap" id="t-ap-mac" style="background:rgba(0,30,180,0.1); color:var(--corp-blue);">Conectado a AP 1</div>
+                </div>
+            </div>
+
+            <div class="controles" style="grid-template-columns: 1fr;">
+                <div class="control-grupo">
+                    <label>🚶 Caminar (Metros): <span id="m-lblpos" style="color:#000000">2.0</span> m</label>
+                    <input type="range" id="m-pos" min="0" max="14" step="0.1" value="2.0">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-2ghz" class="tab-content">
+        <div class="dashboard">
+            <h2>Análisis de Solapamiento en 2.4GHz</h2>
+            <div class="espectro-2g">
+                <svg id="lienzo-2g" style="width:100%; height:100%;">
+                    <line x1="0" y1="200" x2="1000" y2="200" stroke="#CCCCCC" stroke-width="2" />
+                    <g id="eje-canales-2g"></g>
+                    <path id="curva-ap1-2g" fill="rgba(0, 30, 180, 0.2)" stroke="var(--corp-blue)" stroke-width="3" style="transition: all 0.3s;"/>
+                    <path id="curva-ap2-2g" fill="rgba(255, 0, 100, 0.2)" stroke="var(--danger)" stroke-width="3" style="transition: all 0.3s;"/>
+                </svg>
+            </div>
+            <div class="metricas">
+                <div class="tarjeta"><h3>Tu AP (Azul)</h3><div id="val-ap1-2g" class="valor" style="color:var(--corp-blue)">Canal 11</div></div>
+                <div class="tarjeta"><h3>Vecino (Magenta)</h3><div id="val-ap2-2g" class="valor" style="color:var(--danger)">Canal 1</div></div>
+                <div class="tarjeta" id="tarj-est-2g"><h3>Estado del Aire</h3><div id="val-est-2g" class="valor">Limpio</div></div>
+            </div>
+            <div id="alerta-2g" class="alerta"></div>
+            <div class="controles">
+                <div class="control-grupo"><label style="color: var(--corp-blue);">Canal Tu AP:</label><input type="range" id="slider-ap1-2g" min="1" max="11" value="11"></div>
+                <div class="control-grupo"><label style="color: var(--danger);">Canal Vecino:</label><input type="range" id="slider-ap2-2g" min="1" max="11" value="1"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-5ghz" class="tab-content">
+        <div class="dashboard">
+            <h2>Gestión de Canales 5GHz & Radar DFS</h2>
+            <div class="espectro-5g">
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:11px; font-weight:bold; color:#000000;">
+                    <span>UNII-1 (LIBRE)</span><span>UNII-2 / DFS (ZONA RADAR)</span><span>UNII-3 (LIBRE)</span>
+                </div>
+                <div class="grid-espectro" id="grid-5g">
+                    <div id="senal-ap1-5g" class="senal-5g" style="background: rgba(0, 30, 180, 0.6); border: 2px solid var(--corp-blue);">AP 1</div>
+                    <div id="senal-ap2-5g" class="senal-5g" style="background: rgba(255, 0, 100, 0.6); border: 2px solid var(--danger);">AP 2</div>
+                </div>
+            </div>
+            <div class="metricas">
+                <div class="tarjeta"><h3>Colisiones</h3><div id="stat-aire-5g" class="valor">Limpio</div></div>
+                <div class="tarjeta"><h3>Ancho de Canal</h3><div id="stat-bw-5g" class="valor">20 MHz</div></div>
+                <div class="tarjeta"><h3>Regulación</h3><div id="stat-reg-5g" class="valor">Segura</div></div>
+            </div>
+            <div class="controles">
+                <div class="control-grupo">
+                    <label>Canal AP 1 (Azul)</label>
+                    <select id="ch-ap1-5g" onchange="Motor5GHz.actualizar()" style="padding:8px; background:#FFFFFF; color:#000000; font-weight:bold; border:1px solid var(--border);"></select>
+                    <div style="display:flex; gap:10px; margin-top:10px;">
+                        <button onclick="Motor5GHz.setBW(1, 20)" id="bw1-20" class="tab-btn active" style="flex:1; border:1px solid var(--border);">20MHz</button>
+                        <button onclick="Motor5GHz.setBW(1, 40)" id="bw1-40" class="tab-btn" style="flex:1; border:1px solid var(--border);">40MHz</button>
+                        <button onclick="Motor5GHz.setBW(1, 80)" id="bw1-80" class="tab-btn" style="flex:1; border:1px solid var(--border);">80MHz</button>
+                    </div>
+                </div>
+                <div class="control-grupo">
+                    <label>Canal AP 2 (Magenta)</label>
+                    <select id="ch-ap2-5g" onchange="Motor5GHz.actualizar()" style="padding:8px; background:#FFFFFF; color:#000000; font-weight:bold; border:1px solid var(--border);"></select>
+                    <div style="display:flex; gap:10px; margin-top:10px;">
+                        <button onclick="Motor5GHz.setBW(2, 20)" id="bw2-20" class="tab-btn active" style="flex:1; border:1px solid var(--border);">20MHz</button>
+                        <button onclick="Motor5GHz.setBW(2, 40)" id="bw2-40" class="tab-btn" style="flex:1; border:1px solid var(--border);">40MHz</button>
+                        <button onclick="Motor5GHz.setBW(2, 80)" id="bw2-80" class="tab-btn" style="flex:1; border:1px solid var(--border);">80MHz</button>
+                    </div>
+                </div>
+                <button id="btn-radar" onclick="Motor5GHz.activarRadar()">💥 SIMULAR PULSO DE RADAR DFS</button>
+            </div>
+            <div id="alerta-5g" class="alerta" style="margin-top:20px;"></div>
+        </div>
+    </div>
+
+    <div class="signature-floating">
+        <div class="signature-info">
+            <div class="dev">Desarrollado por <span>Estiven Gallego</span></div>
+            <div class="meta">Junio 2026 V1</div>
+        </div>
+        <img class="signature-logo" src="data:image/png;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAIBAQIBAQICAgICAgICAwUDAwMDAwYEBAMFBwYHBwcGBwcICQsJCAgKCAcHCg0KCgsMDAwMBwkODw0MDgsMDAz/2wBDAQICAgMDAwYDAwYMCAcIDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAz/wAARCAEDAxkDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD9/KKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAoopsjhFJJAoTuA6isHxL8UfDfgyMtq+vaPpir1N1eRxY/wC+iK5+w/ak+HOq3Sw2vjvwjcyucKkerQMSfYBq3jha0lzRg2vRke0h3O+oqrpus2urQiS2ube5jblWikDg/iKtVi4tOzKTT2CiiikMKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiikdtq5oAWimQzLLnawYD0OafQAUUUHkUmwCivxU/4Ln/8FvPG/gP416n8I/hFrz+HYfD/AO51zVraLF29wVyYUZxhVUEZK8nPtXwv+zl/wWU/aC/Zt+IFtrdt8QNe8U2aTBrrStdvGvLa8jz8yZY5QkfxKeOtfqeU+Eub4/LlmEHGPMrxi92v0PFr55Qp1fZNX8z+pOivNv2R/wBo/Sf2uf2c/CHxG0RJIbDxXp0d6IHOXtnPEkTepRwyn6V6TX5jWpTpVJUqis07P1R7EJqcVKOzCiiisygooooAKKKKACg9DRSPwp+lJq4Hj37af7bfgf8AYP8A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WerRX/jLwP4evtQTcXvDpNlLcSknne80Ls3517xRQB83/CH/AIJN/Aj4K6rb3mkfDzwpJNbEmM3Gg6ccE4/u26+lfQ2naZDpNnFbW1vBb28ACpFHGERFHQADgAYFWqKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACmy/dp1IwyKTA+Ov2Q/+Crnh740ftXfED4I+LZdO0Lx74U1WeLSgJNkGv2itwYi3/LaMY3JnJB3KCA237ERgOK/mH/4LK6Dq/wACP+CqPxEvtN/tDQ7xNWi1bTbuMtFIPMRXWaNuuN2Rkd1Ir78/4JWf8HH+ieKNM03wJ8f7pdF1lAtvZeK9n+g3nQAXWP8AUv0+fGw99tfque+HFeOXUc4ytOdOcU3FatO2vy/I8HC5xF1ZUK2jTP1+oqjoHiTT/FGj21/pt7a6hY3aCWC4tpVlilU8hlZSQQfUVdDZXNflbTTaZ7qd1dC0UUm4UDFopN3HekaVVBJOAOpNK4DicV8j/wDBWX/gqZ4d/wCCcXwigaJ7TVviF4ibyNC0UvljkgNczAcrCmev8Rwo7kcF/wAFUv8Agub8P/2GtF1Dwt4VvbPxj8VDGUXTrV/MttGJ4D3UgyquOSIQS/ALBVZWP4J3fxE8dft7fteaBe+LNXvfEfijxhrdpZebLlvLV51AjjXoiKCcKOBz71+ncIeHeJzGlLMManChFN66OVl08vM8PMc3hSao03eT/A/rF+GniGbxb8PNC1S5Crcalp9vdShRhQ7xqzYHpkmtys/wnoy+HfDOn6en3LG2jt1+iKFH8q0K/NJ25ny7HtQbcVcKKKKkoKKKKACvmj/gsYpb/gmF8a8f9Cxc/wAhX0vXzT/wWMJH/BML414/6Fi5/kKAPZv2e+fgN4K/7ANj/wCiErsK479nk5+Angr/ALAVl/6ISuxoAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAJwKQHIpSMikAwKBa3FooooGFFFFACBsnFLSBcHNLQJX6hQeaKKTGflV/wcp/8E1tQ+PXw5sfjT4OtLu/8SeCrMWWs2MCmR7zTQ7OJUQdWhLyMfVCe6ivwbjZZBkYZWHbuK/s2uLdbmJkdVdGBDKwyGHoa/If/grN/wAG5kXxI1jVfiL8B0trDWrpnu9Q8KORFbXrk7me1bpHIefkPyk9xmv3fwv8SaOX0VlOZv8Ad/Zl28n5eZ8vnWTyqS9vR36o/LH9kz/go98af2KbtB8P/HGp2Glq+59Huj9q06TkHHlPkLnH8G01+jnwB/4OuNTsbOCD4k/DWG+kVQsl5oV55RY+vlSZ/INX5JfEH4b698JvFt54f8TaRqPh7XdOcpc2F/btBNCQe6t29CMg54NYjSbQQSCTwa/Z8z4F4fzpe2nSi2/tR0v9x87RzHF4d8qb9Gf0LeFP+DoT9nbWLdDqdj490aYgbkfSVm2/ijmtHU/+Dmv9mexgZ4JfHd7Jg4SLQtpP4s4Ffzq9qeJcewr46fglkjnpOaXqv8j0P9YsSlqkftr8ZP8Ag7E8L2VvcQ+BPhdrWozD/U3OsX8dtETz96OMM3/j1fCP7XP/AAXf/aD/AGt9LudKl8Rp4H8P3D5Nj4b3Wkrp/ce4z5jD6FfQ5FfHAIcHFWdE8P33ifWrbTdMsrvUtRvXEdvaWsLTTzseioiglj9BX02WeGvD2Vf7R7JNrrN3t9+iOOvnGLr+7e3oVZpnuZmkkkMkjsWZ3OSzEkkk+pzX6wf8G3//AAS/1Hx38SrH4/8Ai+we18NeHjIvheGdCDqd0QUa7Gf+WUeSFP8AExJ/h5rf8Et/+DcPxH8T9W07xr8ebWbw74cicTW/hjdi+1AcEfaSP9XGf7n3jznFfuV4P8H6Z4E8M2OjaPY2um6XpkCW1ra28YjigjUYVVUcAAV+aeJXiXQnh5ZRlTTT0lJbW7I9bKMmnzqvX+SNOM8GnUirtFLX87q/U+wCiiimAUUUUAFfNP8AwWLXd/wTD+NY/wCpYuf5Cvpavnn/AIKw+H5/Ff8AwTj+MOnW23z7vw3com44GcUCZ6r+zyNvwE8Ff9gKy/8ARCV2Ncl8AojB8DPBsZ6podkp/CBK62gEFFFFAwooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigBCxB6UtFFArBRRRQMKKKKAEJwPWjbu5NLRQxWPJf2o/2HfhV+2V4bGm/EfwVo3iVY1KwXU0Oy8tM94p1xInPOAceor85P2gP+DUXwh4iv57v4cfETWPDqvlkstXgF9Eh9BIu1sfUGv11or6DKOKc1yzTBV5RXa919zOSvgMPW/iRTP5/vEn/BrB8ctKumXTfFfgXVIV+67STQMfwKmofDv/AAay/HfUrpV1HxP4F02E/edZZpiPwCiv6B6K+r/4i1xHa3tV/wCAo4XkOEvex+PfwP8A+DT7QNLuYbj4g/EzVNVRcF7TRrQWqv6jzH3EfgK/Qz9k7/gmv8GP2LLYnwB4G0rTNSkXbNqs6fadRnwMfNO+XA9lIHtXvFFfMZtxdm+ZLlxleUl2vZfcjsoZdh6PwRGrEFHFKFxS0V800d1gooopgFFFFABRRRQAV51+1t8ItR+Pn7NnjPwZpN3b2Go+JNMlsbe4nBMcLuMBmxzgV6LRQBi/Djw7N4Q8AaJpNzIks+l6fBaSOgIV2jjVSR7EitqiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooA/9k=
+" alt="Logo Corporativo">
+        </div>
+
+    <script>
+        // Tab system
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        function abrirPestana(evt, idContenido) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(idContenido).classList.add('active');
+            evt.currentTarget.classList.add('active');
+        }
+
+        // --- LÓGICA MINI SIMULADORES ---
+        function updEIRP() {
+            let tx = parseInt(document.getElementById('sim-eirp-tx').value);
+            let gain = parseInt(document.getElementById('sim-eirp-gain').value);
+            document.getElementById('lbl-eirp-tx').innerText = tx + " dBm";
+            document.getElementById('lbl-eirp-gain').innerText = gain + " dBi";
+            let eirp = tx + gain;
+            document.getElementById('out-eirp').innerText = "EIRP Total: " + eirp + " dBm";
+        }
+
+        function updRSSI() {
+            let dist = parseInt(document.getElementById('sim-rssi').value);
+            document.getElementById('lbl-rssi-dist').innerText = dist + " m";
+            
+            let rssi = Math.round(-35 - (28 * Math.log10(dist))); 
+            
+            let icon = document.getElementById('rssi-user-icon');
+            let percentage = 12 + ((dist / 40) * 75);
+            icon.style.left = percentage + "%";
+            
+            let text = ""; let color = "";
+            let b1 = document.querySelector('.rssi-bar-1');
+            let b2 = document.querySelector('.rssi-bar-2');
+            let b3 = document.querySelector('.rssi-bar-3');
+
+            b1.setAttribute('fill', '#CCCCCC');
+            b2.setAttribute('stroke', '#CCCCCC');
+            b3.setAttribute('stroke', '#CCCCCC');
+
+            if(rssi >= -60) { text = "🟢 Excelente"; color = "var(--success)"; b1.setAttribute('fill', color); b2.setAttribute('stroke', color); b3.setAttribute('stroke', color); }
+            else if(rssi >= -70) { text = "🟡 Bueno / Aceptable"; color = "var(--warning)"; b1.setAttribute('fill', color); b2.setAttribute('stroke', color); }
+            else if(rssi >= -80) { text = "🟠 Malo / Límite"; color = "var(--corp-orange)"; b1.setAttribute('fill', color); }
+            else { text = "🔴 Crítico"; color = "var(--danger)"; b1.setAttribute('fill', color); }
+            
+            let out = document.getElementById('out-rssi');
+            out.innerHTML = `Señal Recibida: <b>${rssi} dBm</b> <br><span style="color:${color}; font-size: 16px;">${text}</span>`;
+            out.style.borderColor = color;
+        }
+        
+        function updDbmMw() {
+            let dbm = parseInt(document.getElementById('sim-dbm-mw').value);
+            document.getElementById('lbl-dbm-sim').innerText = dbm + " dBm";
+            
+            // Fórmula oficial logarítmica a lineal: mW = 10^(dBm/10)
+            let mw = Math.pow(10, dbm / 10);
+            let formato = "";
+            
+            // Ajustamos el formato para que se vea limpio
+            if (mw >= 1000) {
+                formato = (mw / 1000).toFixed(2) + " Watts (W)";
+            } else if (mw < 1) {
+                formato = mw.toFixed(2) + " mW";
+            } else {
+                formato = Math.round(mw) + " milivatios (mW)";
+            }
+            
+            document.getElementById('out-dbm-mw').innerHTML = `Energía Física: <b style="color: var(--corp-magenta);">${formato}</b>`;
+        }
+
+        function updSNR() {
+            let sig = parseInt(document.getElementById('sim-snr-sig').value);
+            let noise = parseInt(document.getElementById('sim-snr-noise').value);
+            
+            document.getElementById('lbl-snr-sig').innerText = sig + " dBm";
+            document.getElementById('lbl-snr-noise').innerText = noise + " dBm";
+            
+            let hSig = ((sig + 100) / 60) * 100;
+            let hNoise = ((noise + 100) / 60) * 100;
+            document.getElementById('bar-sig').style.height = Math.max(5, Math.min(100, hSig)) + "%";
+            document.getElementById('bar-noise').style.height = Math.max(5, Math.min(100, hNoise)) + "%";
+
+            let snr = sig - noise;
+            let out = document.getElementById('out-snr');
+            let text = ""; let color = "";
+            
+            if(snr >= 25) { text = "🟢 Excelente"; color = "var(--success)"; document.getElementById('bar-sig').style.background = "var(--success)"; }
+            else if(snr >= 15) { text = "🟡 Bueno"; color = "var(--warning)"; document.getElementById('bar-sig').style.background = "var(--warning)";}
+            else if(snr >= 10) { text = "🟠 Malo"; color = "var(--corp-orange)"; document.getElementById('bar-sig').style.background = "var(--corp-orange)";}
+            else { text = "🔴 Crítico"; color = "var(--danger)"; document.getElementById('bar-sig').style.background = "var(--danger)";}
+            
+            out.innerHTML = `Diferencia Relación (SNR): <b>${snr} dB</b> <br><span style="color:${color}; font-size: 16px;">${text}</span>`;
+            out.style.borderColor = color;
+        }
+
+        function updWall(loss, name, color, btn) {
+            document.querySelectorAll('.btn-wall').forEach(b => {
+                b.style.background = 'transparent'; b.style.color = '#000000'; b.style.borderColor = 'var(--border)';
+            });
+            btn.style.background = 'rgba(255, 0, 100, 0.1)';
+            btn.style.color = 'var(--danger)';
+            btn.style.borderColor = 'var(--danger)';
+
+            let base = -50;
+            let final = base - loss;
+            
+            let wall = document.getElementById('visual-wall');
+            wall.style.width = (loss * 4.5) + "px"; 
+            wall.style.background = color;
+            wall.style.boxShadow = `0 0 15px ${color}66`;
+            wall.innerText = name;
+            
+            let resultColor = "";
+            if(final >= -60) resultColor = "var(--success)";
+            else if(final >= -70) resultColor = "var(--warning)";
+            else if(final >= -80) resultColor = "var(--corp-orange)";
+            else resultColor = "var(--danger)";
+            
+            let clientDbm = document.getElementById('visual-wall-client-dbm');
+            clientDbm.innerText = final + " dBm";
+            clientDbm.style.color = resultColor;
+
+            let waveOut = document.getElementById('wave-out-svg');
+            waveOut.style.stroke = resultColor;
+            waveOut.style.opacity = (final + 90) / 40; 
+            waveOut.style.strokeWidth = Math.max(0.5, 3 - (loss / 5)); 
+
+            let out = document.getElementById('out-wall');
+            out.innerHTML = `<span style="font-size:14px; color:#000000;">Pérdida por material: <b>-${loss} dB</b></span><br>La señal cruza el muro y se recibe a: <span style="color:${resultColor}; font-size:22px;">${final} dBm</span>`;
+            out.style.borderColor = resultColor;
+        }
+
+        // --- INTERACTIVO AP-515 TOGGLE ---
+        let currentMode515 = "2.4G";
+        function toggleAp515(btn) {
+            let hway = document.getElementById('highway-515');
+            let stats = document.getElementById('stats-515');
+            
+            if(currentMode515 === "2.4G") {
+                currentMode515 = "5G";
+                btn.innerText = "Ver 2.4 GHz (2x2)";
+                hway.innerHTML = `
+                    <div class="mimo-lane"><div class="mimo-pulse"></div></div>
+                    <div class="mimo-lane"><div class="mimo-pulse"></div></div>
+                    <div class="mimo-lane"><div class="mimo-pulse"></div></div>
+                    <div class="mimo-lane"><div class="mimo-pulse"></div></div>
+                `;
+                stats.innerText = "Modo: 5Ghz | 4 Carriles Activos (Doble Capacidad)";
+            } else {
+                currentMode515 = "2.4G";
+                btn.innerText = "Ver 5 GHz (4x4)";
+                hway.innerHTML = `
+                    <div class="mimo-lane"><div class="mimo-pulse"></div></div>
+                    <div class="mimo-lane"><div class="mimo-pulse"></div></div>
+                `;
+                stats.innerText = "Modo: 2.4Ghz | 2 Carriles Activos";
+            }
+        }
+
+        // --- LÓGICA DEL SIMULADOR DE DISTANCIA (3 APs) CORREGIDO ---
+        function updateDistance() {
+            let dist = document.getElementById('dist-slider').value;
+            document.getElementById('dist-val').innerText = dist;
+            
+            let ap1 = document.getElementById('ap1');
+            let ap2 = document.getElementById('ap2');
+            let ap3 = document.getElementById('ap3');
+            let status = document.getElementById('sim-status');
+            
+            let factor = 3.5; 
+            let offsetH = dist * factor; 
+            let triangleHeight = offsetH * 1.732;
+            
+            // Bajamos la posición base a 120px para que no obstruya el título
+            ap1.style.left = `calc(50% - ${offsetH}px - 70px)`;
+            ap1.style.top = `120px`;
+            
+            ap2.style.left = `calc(50% + ${offsetH}px - 70px)`;
+            ap2.style.top = `120px`;
+            
+            ap3.style.left = `calc(50% - 70px)`;
+            ap3.style.top = `calc(120px + ${triangleHeight}px)`;
+
+            if (dist < 15) {
+                status.innerText = "❌ Interferencia (Zonas redundantes críticas)";
+                status.style.background = "rgba(255, 0, 100, 0.1)";
+                status.style.color = "var(--danger)";
+                status.style.borderColor = "var(--danger)";
+            } else if (dist >= 15 && dist <= 18) {
+                status.innerText = "✅ Traslape Óptimo Triangulado (15-20%) - Roaming Multidireccional Perfecto";
+                status.style.background = "rgba(0, 245, 45, 0.1)";
+                status.style.color = "var(--success)";
+                status.style.borderColor = "var(--success)";
+            } else {
+                status.innerText = "⚠️ Zona Muerta / Hueco de Cobertura en el centro del Triángulo";
+                status.style.background = "rgba(255, 190, 0, 0.1)";
+                status.style.color = "var(--warning)";
+                status.style.borderColor = "var(--warning)";
+            }
+        }
+        
+        // --- MOTOR 1: ROAMING BÁSICO ---
+        const MotorRoaming = {
+            conectadoA: 1, umbral: -70,
+            init: function() {
+                document.getElementById('roam-slider1').addEventListener('input', this.actualizar.bind(this));
+                document.getElementById('roam-slider2').addEventListener('input', this.actualizar.bind(this));
+                document.getElementById('roam-pos').addEventListener('input', this.actualizar.bind(this));
+                this.actualizar();
+            },
+            actualizar: function() {
+                let pot1 = parseFloat(document.getElementById('roam-slider1').value);
+                let pot2 = parseFloat(document.getElementById('roam-slider2').value);
+                let pos = parseFloat(document.getElementById('roam-pos').value);
+
+                document.getElementById('roam-lbl1').innerText = pot1; document.getElementById('roam-lbl2').innerText = pot2;
+                document.getElementById('roam-lblpos').innerText = pos.toFixed(1);
+
+                let dist1 = Math.abs(pos - 2.6) + 0.1; 
+                let dist2 = Math.abs(pos - 10.4) + 0.1;
+                
+                let rssi1 = Math.round(pot1 - 44 - (30 * Math.log10(dist1 * 5)));
+                let rssi2 = Math.round(pot2 - 44 - (30 * Math.log10(dist2 * 5)));
+
+                if (this.conectadoA === 1) { if (rssi1 < this.umbral && rssi2 > rssi1) this.conectadoA = 2; } 
+                else { if (rssi2 < this.umbral && rssi1 > rssi2) this.conectadoA = 1; }
+
+                let rssiActual = (this.conectadoA === 1) ? rssi1 : rssi2;
+                let posPct = (pos / 13) * 100;
+                document.getElementById('roam-usuario').style.left = posPct + "%";
+                
+                let linea = document.getElementById('roam-linea');
+                linea.setAttribute('x1', (this.conectadoA === 1 ? 20 : 80) + '%');
+                linea.setAttribute('x2', posPct + '%');
+
+                document.getElementById('roam-val1').innerText = rssi1 + " dBm";
+                document.getElementById('roam-val2').innerText = rssi2 + " dBm";
+                document.getElementById('roam-conn').innerText = "AP " + this.conectadoA;
+
+                let distOtro = Math.abs(pos - (this.conectadoA === 1 ? 10.4 : 2.6));
+                let distConn = Math.abs(pos - (this.conectadoA === 1 ? 2.6 : 10.4));
+                let alerta = document.getElementById('roam-alerta');
+                let tarj = document.getElementById('roam-tarj-conn');
+
+                if (distOtro < distConn && rssiActual >= this.umbral) {
+                    alerta.innerHTML = "❌ STICKY CLIENT: El celular se engaña y se niega a soltar el AP.";
+                    alerta.style.background = "rgba(255, 0, 100, 0.1)"; alerta.style.color = "var(--danger)";
+                    linea.setAttribute('stroke', 'var(--warning)'); document.getElementById('roam-conn').style.color = 'var(--warning)';
+                    tarj.style.borderBottomColor = 'var(--warning)';
+                } else {
+                    alerta.innerHTML = "✅ ROAMING ÓPTIMO: Transición limpia.";
+                    alerta.style.background = "rgba(0, 245, 45, 0.1)"; alerta.style.color = "var(--success)";
+                    linea.setAttribute('stroke', 'var(--success)'); document.getElementById('roam-conn').style.color = 'var(--success)';
+                    tarj.style.borderBottomColor = 'var(--success)';
+                }
+            }
+        };
+
+        // --- MOTOR 4: FABRICANTES ---
+        const MotorMarcas = {
+            disp: { win: { conn: 1, thr: -65 }, ios: { conn: 1, thr: -70 }, mac: { conn: 1, thr: -75 } },
+            init: function() {
+                document.getElementById('m-pos').addEventListener('input', this.actualizar.bind(this));
+                this.actualizar();
+            },
+            actualizar: function() {
+                let pos = parseFloat(document.getElementById('m-pos').value);
+                document.getElementById('m-lblpos').innerText = pos.toFixed(1);
+
+                let ap1 = 2.1; let ap2 = 11.9;
+                let eirp = 12; 
+
+                let dist1 = Math.abs(pos - ap1) + 0.1; let dist2 = Math.abs(pos - ap2) + 0.1;
+                let rssi1 = Math.round(eirp - 40 - (30 * Math.log10(dist1 * 4)));
+                let rssi2 = Math.round(eirp - 40 - (30 * Math.log10(dist2 * 4)));
+                let posPct = (pos / 14) * 100;
+
+                ['win', 'ios', 'mac'].forEach(d => {
+                    let obj = this.disp[d];
+                    if (obj.conn === 1) { if (rssi1 < obj.thr && rssi2 > rssi1) obj.conn = 2; }
+                    else { if (rssi2 < obj.thr && rssi1 > rssi2) obj.conn = 1; }
+
+                    let rssiActual = (obj.conn === 1) ? rssi1 : rssi2;
+                    document.getElementById('m-' + d).style.left = posPct + "%";
+                    
+                    let linea = document.getElementById('m-linea-' + d);
+                    let xOrigen = obj.conn === 1 ? 15 : 85;
+                    linea.setAttribute('x1', xOrigen + '%');
+                    linea.setAttribute('x2', posPct + '%');
+                    linea.style.opacity = rssiActual < obj.thr ? "0.3" : "1";
+
+                    document.getElementById('t-rssi-' + d).innerText = rssiActual + " dBm";
+                    document.getElementById('t-rssi-' + d).style.color = rssiActual < obj.thr ? "var(--warning)" : "var(--text-main)";
+                    
+                    let bg = obj.conn === 1 ? "rgba(0,30,180,0.1)" : "rgba(0,245,45,0.1)";
+                    let fg = obj.conn === 1 ? "var(--corp-blue)" : "var(--success)";
+                    let apBox = document.getElementById('t-ap-' + d);
+                    apBox.innerText = "Conectado a AP " + obj.conn;
+                    apBox.style.background = bg; apBox.style.color = fg;
+                });
+            }
+        };
+
+        // --- MOTOR 2: 2.4GHZ ---
+        const Motor2GHz = {
+            margen: 80, pxCh: 60, ancho: 264,
+            init: function() {
+                let eje = '';
+                for(let i=1; i<=13; i++) {
+                    let x = this.margen + ((i-1)*this.pxCh);
+                    eje += `<line x1="${x}" y1="200" x2="${x}" y2="205" stroke="#333333" stroke-width="2" />`;
+                    eje += `<text x="${x}" y="225" fill="#000000" font-size="12px" font-weight="bold" text-anchor="middle">CH ${i}</text>`;
+                }
+                document.getElementById('eje-canales-2g').innerHTML = eje;
+                document.getElementById('slider-ap1-2g').addEventListener('input', this.actualizar.bind(this));
+                document.getElementById('slider-ap2-2g').addEventListener('input', this.actualizar.bind(this));
+                this.actualizar();
+            },
+            getPath: function(ch) {
+                let cx = this.margen + ((ch-1)*this.pxCh); let mit = this.ancho/2;
+                return `M ${cx-mit} 200 Q ${cx-mit+20} 50, ${cx} 50 Q ${cx+mit-20} 50, ${cx+mit} 200`;
+            },
+            actualizar: function() {
+                let c1 = parseInt(document.getElementById('slider-ap1-2g').value);
+                let c2 = parseInt(document.getElementById('slider-ap2-2g').value);
+                document.getElementById('val-ap1-2g').innerText = "Canal " + c1; document.getElementById('val-ap2-2g').innerText = "Canal " + c2;
+                document.getElementById('curva-ap1-2g').setAttribute('d', this.getPath(c1)); document.getElementById('curva-ap2-2g').setAttribute('d', this.getPath(c2));
+                let sep = Math.abs(c1 - c2);
+                let alerta = document.getElementById('alerta-2g'); let estado = document.getElementById('val-est-2g'); let tarj = document.getElementById('tarj-est-2g');
+                if (sep === 0) { estado.innerText = "Co-Canal"; estado.style.color = "var(--warning)"; tarj.style.borderBottom = "4px solid var(--warning)"; alerta.style.background = "rgba(255, 190, 0, 0.1)"; alerta.style.color = "var(--warning)"; alerta.innerHTML = "<b>⚠️ Interferencia Co-Canal:</b> Los APs se pisan, la velocidad cae a la mitad."; } 
+                else if (sep < 5) { estado.innerText = "Adyacente"; estado.style.color = "var(--danger)"; tarj.style.borderBottom = "4px solid var(--danger)"; alerta.style.background = "rgba(255, 0, 100, 0.1)"; alerta.style.color = "var(--danger)"; alerta.innerHTML = "<b>❌ Interferencia Adyacente:</b> Ruido destructivo y alta latencia."; } 
+                else { estado.innerText = "Óptimo"; estado.style.color = "var(--success)"; tarj.style.borderBottom = "4px solid var(--success)"; alerta.style.background = "rgba(0, 245, 45, 0.1)"; alerta.style.color = "var(--success)"; alerta.innerHTML = `<b>✅ Espectro Limpio (Sep: ${sep} CH):</b> Diseño perfecto.`; }
+            }
+        };
+
+        // --- MOTOR 3: 5GHZ ---
+        const Motor5GHz = {
+            canales: [36,40,44,48,52,56,60,64,100,104,108,112,116,120,124,128,132,136,140,144,149,153,157,161,165],
+            dfs: [52,56,60,64,100,104,108,112,116,120,124,128,132,136,140,144],
+            ap1: { ch: 36, bw: 20 }, ap2: { ch: 48, bw: 20 },
+            init: function() {
+                const grid = document.getElementById('grid-5g'); const sel1 = document.getElementById('ch-ap1-5g'); const sel2 = document.getElementById('ch-ap2-5g');
+                this.canales.forEach(c => { grid.innerHTML += `<div class="slot-canal ${this.dfs.includes(c)?'slot-dfs':''}">${c}</div>`; sel1.add(new Option("CH "+c, c)); sel2.add(new Option("CH "+c, c)); });
+                sel2.value = 48; this.actualizar();
+            },
+            setBW: function(ap, bw) {
+                if(ap===1) this.ap1.bw = bw; else this.ap2.bw = bw;
+                [20,40,80].forEach(v => document.getElementById(`bw${ap}-${v}`).className = (v===bw)?'tab-btn active':'tab-btn');
+                this.actualizar();
+            },
+            actualizar: function() {
+                this.ap1.ch = parseInt(document.getElementById('ch-ap1-5g').value); this.ap2.ch = parseInt(document.getElementById('ch-ap2-5g').value);
+                const draw = (apObj, id) => { const idx = this.canales.indexOf(apObj.ch); const blks = apObj.bw/20; const el = document.getElementById(id); el.style.width = `calc(${(blks*100)/25}% - 8px)`; el.style.left = `calc(${(idx*100)/25}%)`; el.innerText = `AP (${apObj.bw}M)`; };
+                draw(this.ap1, 'senal-ap1-5g'); draw(this.ap2, 'senal-ap2-5g');
+                const i1s = this.canales.indexOf(this.ap1.ch), i1e = i1s + (this.ap1.bw/20)-1; const i2s = this.canales.indexOf(this.ap2.ch), i2e = i2s + (this.ap2.bw/20)-1;
+                const col = (i1s <= i2e && i2s <= i1e); const enDFS = this.dfs.includes(this.ap1.ch) || this.dfs.includes(this.ap2.ch);
+                document.getElementById('stat-aire-5g').innerText = col ? "Colisión!" : "Limpio"; document.getElementById('stat-aire-5g').style.color = col ? "var(--danger)" : "var(--success)";
+                document.getElementById('stat-reg-5g').innerText = enDFS ? "ZONA DFS" : "Segura"; document.getElementById('stat-reg-5g').style.color = enDFS ? "var(--warning)" : "var(--success)";
+                let alerta = document.getElementById('alerta-5g');
+                if(col) { alerta.style.background = "rgba(255, 0, 100, 0.1)"; alerta.style.color = "var(--danger)"; alerta.innerText = "❌ INTERFERENCIA DETECTADA: Los anchos de canal se solapan."; } 
+                else { alerta.style.background = "rgba(0, 245, 45, 0.1)"; alerta.style.color = "var(--success)"; alerta.innerText = "✅ ESPECTRO ÓPTIMO."; }
+            },
+            activarRadar: function() {
+                if(this.dfs.includes(this.ap1.ch) || this.dfs.includes(this.ap2.ch)) {
+                    alert("⚠️ RADAR DETECTADO: Los APs saltarán a canales seguros.");
+                    if(this.dfs.includes(this.ap1.ch)) document.getElementById('ch-ap1-5g').value = 36;
+                    if(this.dfs.includes(this.ap2.ch)) document.getElementById('ch-ap2-5g').value = 149;
+                    this.actualizar();
+                } else alert("Aire seguro. Los APs no están en rango de radares (UNII-2).");
+            }
+        };
+
+        // --- MOTOR 5: SIMULADOR DE MITIGACIÓN CCI (INTEGRADO) ---
+        const MotorCCI = {
+            init: function() {
+                this.cambiarEscenario();
+            },
+            cambiarEscenario: function() {
+                let banda = document.getElementById('cci-band-select').value;
+                let solucion = document.getElementById('cci-sol-select').value;
+                let solGrupo = document.getElementById('cci-sol-grupo');
+                let alertUI = document.getElementById('cci-alert-ui');
+                let diag = document.getElementById('cci-diagnostic-box');
+
+                // Coberturas
+                let c1 = document.getElementById('cci-cov-1');
+                let c2 = document.getElementById('cci-cov-2');
+                let c3 = document.getElementById('cci-cov-3');
+                let c4 = document.getElementById('cci-cov-4');
+
+                // Textos de los Nodos
+                let n1 = document.getElementById('cci-node-1');
+                let n2 = document.getElementById('cci-node-2');
+                let n3 = document.getElementById('cci-node-3');
+                let n4 = document.getElementById('cci-node-4');
+
+                alertUI.style.display = "none";
+                c2.style.opacity = "1";
+                c4.style.opacity = "1";
+
+                if (banda === "5g") {
+                    solGrupo.style.display = "none";
+                    
+                    // Cambiar textos a canales de 5 GHz
+                    n1.innerHTML = '36<span>AP 1 (CH 36)</span>';
+                    n2.innerHTML = '44<span>AP 2 (CH 44)</span>';
+                    n3.innerHTML = '149<span>AP 3 (CH 149)</span>';
+                    n4.innerHTML = '157<span>AP 4 (CH 157)</span>';
+                    
+                    this.setCell(c1, 160, "rgba(0, 30, 180, 0.15)", "2px solid var(--corp-blue)");
+                    this.setCell(c2, 160, "rgba(68, 200, 245, 0.15)", "2px solid var(--corp-light-blue)");
+                    this.setCell(c3, 160, "rgba(0, 245, 45, 0.15)", "2px solid var(--success)");
+                    this.setCell(c4, 160, "rgba(255, 0, 100, 0.15)", "2px solid var(--corp-magenta)");
+
+                    diag.className = "alerta success";
+                    diag.innerHTML = "<b>🟢 Red Óptima en 5 GHz:</b> Cada AP opera en un canal de frecuencia totalmente independiente sin pisarse (CH 36, 44, 149, 157). El traslape en los bordes de celda se mantiene en el rango correcto (15-20%), garantizando un roaming tridimensional perfecto.";
+                } 
+                else if (banda === "2g") {
+                    solGrupo.style.display = "block";
+
+                    // Cambiar textos a canales de 2.4 GHz
+                    n1.innerHTML = '1<span>AP 1 (CH 1)</span>';
+                    n2.innerHTML = '6<span>AP 2 (CH 6)</span>';
+                    n3.innerHTML = '11<span>AP 3 (CH 11)</span>';
+                    n4.innerHTML = '1<span>AP 4 (CH 1)</span>';
+
+                    if (solucion === "defecto") {
+                        alertUI.style.display = "block";
+                        
+                        this.setCell(c1, 280, "rgba(255, 0, 100, 0.25)", "2px dashed var(--danger)");
+                        this.setCell(c2, 280, "rgba(255, 190, 0, 0.15)", "2px solid var(--warning)");
+                        this.setCell(c3, 280, "rgba(0, 245, 45, 0.15)", "2px solid var(--success)");
+                        this.setCell(c4, 280, "rgba(255, 0, 100, 0.25)", "2px dashed var(--danger)");
+
+                        diag.className = "alerta danger";
+                        diag.innerHTML = "<b>❌ COLISIÓN CO-CANAL EN CADENA:</b> Debido a la excelente penetración de la banda 2.4 GHz, las celdas duplican su tamaño. Al contar únicamente con 3 canales limpios, el <b>AP 1</b> y el <b>AP 4</b> repiten el Canal 1. Sus coberturas se solapan masivamente, elevando la tasa de reintentos de paquetes a niveles críticos.";
+                    } 
+                    else if (solucion === "bozal") {
+                        this.setCell(c1, 160, "rgba(251, 86, 30, 0.15)", "2px solid var(--corp-orange)");
+                        this.setCell(c2, 160, "rgba(255, 190, 0, 0.15)", "2px solid var(--warning)");
+                        this.setCell(c3, 160, "rgba(0, 245, 45, 0.15)", "2px solid var(--success)");
+                        this.setCell(c4, 160, "rgba(251, 86, 30, 0.15)", "2px solid var(--corp-orange)");
+
+                        diag.className = "alerta success";
+                        diag.innerHTML = "<b>✅ EQUILIBRIO POR ASIMETRÍA (Cell Sizing):</b> Reducimos la potencia de transmisión del radio 2.4 GHz (restringiendo el perfil ARM entre 9 y 12 dBm). Las burbujas se encogen para imitar el tamaño físico de la banda de 5 GHz, deteniendo el solapamiento entre el AP 1 y el AP 4 de manera inmediata.";
+                    } 
+                }
+            },
+            setCell: function(el, size, bg, border) {
+                el.style.width = size + "px";
+                el.style.height = size + "px";
+                el.style.background = bg;
+                el.style.border = border;
+            }
+        };        
+// --- LÓGICAS COMPARTIDAS ---
+        function updateEIRP() {
+            let eirpSlider = document.getElementById('eirp-ap-slider');
+            if(!eirpSlider) return;
+            let apPwr = parseInt(eirpSlider.value);
+            document.getElementById('eirp-ap-val').innerText = apPwr;
+            let apDist = (apPwr / 30) * 100;
+            document.getElementById('eirp-ap-cov').style.width = apDist + '%';
+            let cliPos = 100 - apDist; 
+            document.getElementById('eirp-client-icon').style.right = cliPos + '%';
+            document.getElementById('eirp-client-cov').style.right = cliPos + '%';
+            let alertBox = document.getElementById('eirp-alert');
+            if (apPwr > 21) {
+                alertBox.className = 'alerta danger';
+                alertBox.innerHTML = '❌ <strong>ASIMETRÍA SEVERA:</strong> El cliente en el borde escucha al AP a ' + apPwr + ' dBm, pero su respuesta (14 dBm) muere en el camino y no llega de vuelta.';
+            } else {
+                alertBox.className = 'alerta success';
+                alertBox.innerHTML = '✅ <strong>CELDA BALANCEADA ("Bozal" ARM):</strong> Al encoger la celda del AP a ' + apPwr + ' dBm, obligas al cliente a estar más cerca, asegurando que ambos se escuchen.';
+            }
+        }
+
+        let pIsWall = false;
+        function updateParaguas() {
+            let pSlider = document.getElementById('p-alt-slider');
+            if(!pSlider) return;
+            let alt = parseInt(pSlider.value);
+            document.getElementById('p-alt-val').innerText = alt;
+            let cone = document.getElementById('p-cone');
+            let alertBox = document.getElementById('p-alert');
+            let coneH = 50 + (alt * 25);
+            let coneW = 100 + (alt * 40); 
+            let opac = 1 - ((alt - 3) * 0.15); 
+            cone.style.height = coneH + 'px';
+            cone.style.width = coneW + 'px';
+            
+            if(!pIsWall) {
+                cone.style.background = `linear-gradient(to bottom, rgba(0, 30, 180, ${Math.max(opac, 0.1)}), rgba(0, 30, 180, 0.05))`;
+                if (alt > 4) {
+                    alertBox.className = 'alerta warning';
+                    alertBox.innerHTML = '⚠️ <strong>ALTURA EXCESIVA:</strong> A ' + alt + ' metros el cono es ancho, pero la señal es casi transparente en el piso (Free Space Path Loss).';
+                } else {
+                    alertBox.className = 'alerta success';
+                    alertBox.innerHTML = '✅ <strong>MONTAJE ÓPTIMO:</strong> En techo a altura ideal (' + alt + 'm). La señal impacta fuerte en la zona de clientes.';
+                }
+            } else {
+                cone.style.background = `linear-gradient(to bottom, rgba(255, 0, 100, 0.8), rgba(255, 0, 100, 0.1))`;
+                alertBox.className = 'alerta danger';
+                alertBox.innerHTML = '❌ <strong>ERROR CLÁSICO (Pared):</strong> La mitad de la energía RF se estrella inútilmente contra el techo y el piso. Cobertura horizontal arruinada.';
+            }
+        }
+
+        let pBtnWall = document.getElementById('p-btn-wall');
+        if(pBtnWall) {
+            pBtnWall.addEventListener('click', function() {
+                pIsWall = !pIsWall;
+                let ap = document.getElementById('p-ap');
+                let cone = document.getElementById('p-cone');
+                let errorZone = document.getElementById('p-ceiling-error');
+                if(pIsWall) {
+                    ap.style.transform = 'translateX(-50%) rotate(-90deg)';
+                    cone.style.transform = 'translateX(-50%) rotate(-90deg)';
+                    errorZone.style.opacity = '1';
+                    this.innerHTML = '🔄 Volver a Montaje en Techo (0°)';
+                    this.style.borderColor = 'var(--danger)';
+                } else {
+                    ap.style.transform = 'translateX(-50%) rotate(0deg)';
+                    cone.style.transform = 'translateX(-50%) rotate(0deg)';
+                    errorZone.style.opacity = '0';
+                    this.innerHTML = '🔄 Rotar a Montaje en Pared (90°)';
+                    this.style.borderColor = 'var(--border)';
+                }
+                updateParaguas();
+            });
+        }
+
+        function updateCellSizing() {
+            let pwr2Slider = document.getElementById('c-2g-slider');
+            let pwr5Slider = document.getElementById('c-5g-slider');
+            if(!pwr2Slider || !pwr5Slider) return;
+            let pwr2 = parseInt(pwr2Slider.value);
+            let pwr5 = parseInt(pwr5Slider.value);
+            document.getElementById('c-2g-val').innerText = pwr2;
+            document.getElementById('c-5g-val').innerText = pwr5;
+            let size2 = 100 + (pwr2 * 10);
+            let size5 = 50 + (pwr5 * 10);
+            document.getElementById('c-2g').style.width = size2 + 'px';
+            document.getElementById('c-2g').style.height = size2 + 'px';
+            document.getElementById('c-5g').style.width = size5 + 'px';
+            document.getElementById('c-5g').style.height = size5 + 'px';
+            let diff = pwr5 - pwr2;
+            let alertBox = document.getElementById('c-alert');
+            if (diff >= 3 && diff <= 6) {
+                alertBox.className = 'alerta success';
+                alertBox.innerHTML = '✅ <strong>TRUCO DEL ARQUITECTO:</strong> Celdas perfectamente alineadas. El <em>Band Steering</em> empujará clientes a 5GHz sin problemas.';
+            } else if (diff < 3) {
+                alertBox.className = 'alerta danger';
+                alertBox.innerHTML = '❌ <strong>INTERFERENCIA Y ASIMETRÍA:</strong> 2.4GHz viaja mucho más lejos. Tendrás dispositivos "pegados" a 2.4GHz desde el parqueadero.';
+            } else {
+                alertBox.className = 'alerta warning';
+                alertBox.innerHTML = '⚠️ <strong>BRECHA MUY ALTA:</strong> 5GHz está gritando demasiado en comparación. Los bordes de la celda serán inestables.';
+            }
+        }
+
+        // --- INICIALIZADOR GLOBAL ---
+        window.onload = function() {
+            updateEIRP();
+            updateParaguas();
+            updateCellSizing();
+            updEIRP();
+            updRSSI();
+            updSNR();
+            updDbmMw();
+            updateDistance();
+            
+            let firstWallBtn = document.querySelector('.btn-wall');
+            if(firstWallBtn) firstWallBtn.click();
+            
+            MotorRoaming.init(); 
+            MotorMarcas.init(); 
+            Motor2GHz.init(); 
+            Motor5GHz.init(); 
+            MotorCCI.init();
+        };
+    </script>
+</body>
+</html>
